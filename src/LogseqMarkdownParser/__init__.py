@@ -21,7 +21,6 @@ def parse_file(
 
     content = Path(file_path).read_text()
     parsed_text = classes.ParsedText(content).parse_text(
-            content=content,
             verbose=verbose,
             )
     return parsed_text

@@ -102,9 +102,9 @@ class ParsedBlock(str):
 class ParsedText(str):
     def parse_text(
             self,
-            content,
             verbose=False,
             ):
+        content = self.__str__()
         assert isinstance(content, str), (
             f"content must be of type string, not '{type(content)}'")
 
