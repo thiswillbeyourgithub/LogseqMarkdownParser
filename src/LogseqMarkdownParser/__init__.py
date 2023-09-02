@@ -26,7 +26,7 @@ def parse_file(
     return parsed_text
 
 def cli():
-    done = fire.Fire(parse_file)
+    return fire.Fire(parse_file)
 
 if __name__ == "__main__":
     done = fire.Fire(parse_file)
