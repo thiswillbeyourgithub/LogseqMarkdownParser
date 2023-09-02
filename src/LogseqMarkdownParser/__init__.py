@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 import fire
 
-from classes import ParsedText, ParsedBlock
+from . import classes
 
 def parse_file(
         file_path,
@@ -17,11 +17,14 @@ def parse_file(
     assert Path(file_path).exists(), f"{file_path} not found"
 
     content = Path(file_path).read_text()
-    parsed_text = ParsedText(content).parse_text(
+    parsed_text = classes.ParsedText(content).parse_text(
             content=content,
             verbose=verbose,
             )
     return parsed_text
+
+def cli():
+    done = fire.Fire(parse_file)
 
 if __name__ == "__main__":
     done = fire.Fire(parse_file)
