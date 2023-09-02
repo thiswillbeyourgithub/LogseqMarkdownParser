@@ -2,7 +2,10 @@ import re
 from pathlib import Path
 import fire
 
-from . import classes
+try:
+    from . import classes
+except:
+    import classes
 
 def parse_file(
         file_path,
