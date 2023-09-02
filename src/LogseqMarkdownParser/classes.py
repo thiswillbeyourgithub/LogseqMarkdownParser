@@ -178,9 +178,9 @@ class ParsedText(str):
             # get the TODO state
             TODO_state = None
             for keyword in ["TODO", "DOING", "DONE"]:
-                assert not TODO_state, (
-                    f"block fits multiple TODO states: '{block}'")
                 if re.match(f"- {keyword} ", block):
+                    assert not TODO_state, (
+                        f"block fits multiple TODO states: '{block}'")
                     TODO_state = keyword
             if verbose:
                 print(f"Block TODO_state: {TODO_state}")
