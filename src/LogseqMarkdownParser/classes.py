@@ -70,6 +70,26 @@ class ParsedBlock(str):
         assert self.block_content.count(f"{key}::") == 1, (
                 f"invalid number of key {key} in {self.block_content}")
 
+    def del_logseq_property(
+            self,
+            key,
+            ):
+        """
+        opposite of add_logseq_property
+        """
+        assert key in self.block_properties, "key not found in properties"
+        assert self.block_content.count(f"{key}::") == 1, (
+                f"invalid number of key {key} in {self.block_content}")
+        temp = []
+        for line in self.block_content.split("\n"):
+            if re.match(rf"\s*{key}:: ", line):
+                continue
+            else:
+                temp.append(line)
+        self.block_content = "\n".join(temp)
+        assert self.block_content.count(f"{key}::") == 0, (
+                f"invalid number of key {key} in {self.block_content}")
+
     def __str__(self):
         """overloading of the original str to make it access the block_content
         attribute"""
