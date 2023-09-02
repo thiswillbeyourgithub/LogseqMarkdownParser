@@ -4,13 +4,16 @@ import re
 
 INDENT_REGEX = re.compile(r"^\s*")
 
+
 def count_indentation(content):
     """count the leading spaces to know the indentation level"""
     return len(re.search(INDENT_REGEX, content.replace("\t", "    ")).group(0))
 
+
 class ParsedBlock(str):
     def parse(
             self,
+            block_content,
             block_properties,
             block_hierarchy,
             block_uuid,
@@ -33,7 +36,11 @@ class ParsedBlock(str):
                                as a dictionnary
             block_indentation_level: in number of spaces, with tab=4
             block_hierarchy: list of each parent header. Empty if not under any title.
+
+        New methods:
+            add_logseq_property
         """
+        self.block_content = block_content
         self.block_properties = block_properties
         self.block_hierarchy = block_hierarchy
         self.block_uuid = block_uuid
@@ -42,6 +49,34 @@ class ParsedBlock(str):
         self.block_TODO_state = TODO_state
         return self
 
+    def add_logseq_property(
+            self,
+            key,
+            value):
+        """
+        add a new property to the block. Both in the attribute and in the
+        block content.
+        """
+        if key in self.block_properties:
+            self.block_properties[key] = value
+            assert self.block_content.count(f"{key}::") == 1, (
+                    f"invalid number of key {key} in {self.block_content}")
+            re.sub(rf"{key}:: \w+", f"{key}:: {value}", self.block_content)
+        else:
+            self.block_properties[key] = value
+            self.block_content += "\n"
+            self.block_content += " " * (self.block_indentation_level + 2)
+            self.block_content += f"{key}:: {value}"
+        assert self.block_content.count(f"{key}::") == 1, (
+                f"invalid number of key {key} in {self.block_content}")
+
+    def __str__(self):
+        """overloading of the original str to make it access the block_content
+        attribute"""
+        return self.block_content
+
+    def __repr__(self):
+        return self.__str__
 
 
 class ParsedText(str):
@@ -131,6 +166,7 @@ class ParsedText(str):
                 print(f"Block TODO_state: {TODO_state}")
 
             parsed = ParsedBlock(block).parse(
+                    block_content=block,
                     block_properties=block_properties,
                     block_hierarchy=cur_headers,
                     block_uuid=block_uuid,
