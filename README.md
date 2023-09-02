@@ -11,6 +11,8 @@ a simple python script to load a markdown file and easily access the properties 
 * easily save to a path
 
 ## Usage
+* Install
+    python -m pip install LogseqMarkdownParser
 * load file
     parsed_text = parse_file(file_path)
 * get information about a block
