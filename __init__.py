@@ -9,17 +9,6 @@ def parse_file(
         verbose=False,
         ):
     """
-    Usage:
-    # load file
-    parsed_text = parse_file(file_path)
-
-    # get information about a block
-    print(parsed_text.parsed_blocks[0])
-    print(parsed_text.parsed_blocks[0].block_properties)
-
-    # save to path
-    parsed_text.save_as(other_file_path)
-
     Parameters:
     -----------
     file_path
