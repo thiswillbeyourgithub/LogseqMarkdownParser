@@ -112,6 +112,8 @@ class ParsedText(str):
 
             if "id" in block_properties:
                 block_uuid = block_properties["id"]
+                if verbose:
+                    print(f"Random block uuid: {block_uuid}")
             else:
                 # random uuid
                 block_uuid = str(uuid.uuid4())
