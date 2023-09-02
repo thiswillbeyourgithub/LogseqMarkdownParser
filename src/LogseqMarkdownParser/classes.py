@@ -56,6 +56,8 @@ class ParsedText(str):
         # detect each block
         lines = content.split("\n")
         for i, line in enumerate(lines):
+            if not i:
+                continue  # skip the first line
             if not re.match(r"\s*- *", line):
                 ii = 0
                 while True:
@@ -64,7 +66,7 @@ class ParsedText(str):
                         lines[i-ii] += "\n" + line
                         lines[i] = None
                         break
-                    if i-ii < 0:
+                    if i-ii <= 0:
                         raise Exception("Endless loop")
         blocks = [line for line in lines if line is not None]
         if verbose:
