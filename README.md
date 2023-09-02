@@ -18,6 +18,8 @@ a simple python script to load a markdown file and easily access the properties 
 * get information about a block
     print(parsed_text.parsed_blocks[0])
     print(parsed_text.parsed_blocks[0].block_properties)
+* add a property to a block
+    parsed_text.parsed_blocks[0].add_logseq_property(key, value)
 * save to path
     parsed_text.save_as(other_file_path)
 
