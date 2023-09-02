@@ -2,7 +2,7 @@
 a simple python script to load a markdown file and easily access the properties of each block etc.
 
 # Why?
-* I wanted a script that reads a logseq page, extracts every "DONE" tasks and append it to another file. So I made this little parser. If you need anything just create an issue.
+* I wanted a script that reads a logseq page, extracts every "DONE" tasks and append it to another file. So I made this little parser. The resulting script can be found in `examples/done_mover.py`. If you need anything just create an issue.
 
 ## Features
 * access block properties as a dictionary
