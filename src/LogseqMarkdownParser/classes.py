@@ -144,8 +144,13 @@ class ParsedText(str):
             if verbose:
                 print("\n---------------------------------")
 
-        assert "\n".join(self.parsed_blocks) == content, (
-                "file content differed after parsing")
+        if not "\n".join(self.parsed_blocks) == content:
+            import difflib
+            print(''.join(difflib.ndiff(
+                content,
+                "\n".join(self.parsed_blocks)
+                )))
+            raise Exception("file content differed after parsing")
         return self
 
     def save_as(
