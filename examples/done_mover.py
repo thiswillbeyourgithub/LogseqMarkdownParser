@@ -34,6 +34,10 @@ def main(
     latest_indent = 0
     adding_mode = False
     for i, block in enumerate(todos.parsed_blocks):
+        # don't go too deep
+        if block.block_indentation_level > 6 and not adding_mode:
+            continue
+
         if not adding_mode:
             if block.block_TODO_state == "DONE":
                 dones.parsed_blocks.append(block)
