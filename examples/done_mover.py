@@ -40,14 +40,15 @@ def main(
                 todos.parsed_blocks[i] = None
 
                 adding_mode = True
-                latest_indent = block.block_indentation_level
+            else:
+                assert "- DONE " not in block
         else:
             if block.block_indentation_level > latest_indent:
                 dones.parsed_blocks.append(block)
                 todos.parsed_blocks[i] = None
             else:
-                latest_indent = block.block_indentation_level
                 adding_mode = False
+                latest_indent = block.block_indentation_level
 
     todos.parsed_blocks = [b for b in todos.parsed_blocks if b is not None]
 
