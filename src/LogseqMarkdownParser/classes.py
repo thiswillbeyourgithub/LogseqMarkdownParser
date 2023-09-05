@@ -113,7 +113,7 @@ class MdText:
 
 
 class MdBlock:
-    PROP_REGEX = re.compile(r"\s*(\w+):: (\w+)")
+    PROP_REGEX = re.compile(r"\s*\w+:: \w+")
     INDENT_REGEX = re.compile(r"^\s*")
 
     def __init__(
@@ -273,16 +273,11 @@ class MdBlock:
                 "key apparently failed to be deleted")
 
     def get_properties(self):
-        prop = re.search(self.PROP_REGEX, self.content)
-        if not prop:
-            properties = {}
-        else:
-            properties = {
-                    k.strip(): v.strip()
-                    for k, v in zip(*prop.groups())
-                    }
-        if self.verbose:
-            print(f"Block properties: {properties}")
+        prop = re.findall(self.PROP_REGEX, self.content)
+        properties = {}
+        for found in prop:
+            key, value = found.split(":: ")
+            properties[key.strip()] = value.strip()
         return properties
 
     def _get_TODO_state(self):
