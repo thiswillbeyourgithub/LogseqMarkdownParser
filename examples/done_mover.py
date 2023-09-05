@@ -59,16 +59,20 @@ def main(
             content="\n".join([str(b) for b in dones]),
             verbose=verbose)
 
-    todos.export_to(TODO_path, overwrite=True)
-    dones.export_to(DONE_path, overwrite=True)
-
-    n_todo2 = len(Path(TODO_path).read_text().split("\n"))
-    n_done2 = len(Path(DONE_path).read_text().split("\n"))
+    temp_file = Path("./cache")
+    todos.export_to(temp_file, overwrite=True)
+    n_todo2 = len(temp_file.read_text().split("\n"))
+    dones.export_to(temp_file, overwrite=True)
+    n_done2 = len(temp_file.read_text().split("\n"))
+    temp_file.unlink()
     diff = n_todo - n_todo2 + n_done - n_done2
     if diff != 0:
         raise Exception(
                 "Number of lines of output documents is not the "
                 f"sum of number of lines of input documents. Diff={diff}")
+
+    todos.export_to(TODO_path, overwrite=True)
+    dones.export_to(DONE_path, overwrite=True)
 
 
 if __name__ == "__main__":
