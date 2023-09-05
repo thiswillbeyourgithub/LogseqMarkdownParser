@@ -78,7 +78,6 @@ class MdText:
                 if i < nref and spco[i] != spref[i]:
                     print(f"reformed: {spref[i]}")
                 print("\n------------------------\n")
-            breakpoint()
             raise Exception("file content differed after parsing")
 
     def export_to(
