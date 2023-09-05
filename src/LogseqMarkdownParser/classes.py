@@ -1,179 +1,21 @@
+import textwrap
 from pathlib import Path
 import uuid
 import re
 
-INDENT_REGEX = re.compile(r"^\s*")
 
-
-def count_indentation(content):
-    """count the leading spaces to know the indentation level"""
-    return len(re.search(INDENT_REGEX, content.replace("\t", "    ")).group(0))
-
-
-class ParsedBlock(str):
-    def parse(
+class MdText:
+    "simple class that stores the markdown blocks in the self.blocks attribute"
+    def __init__(
             self,
-            block_content,
-            block_properties,
-            block_hierarchy,
-            block_uuid,
-            indentation_level,
-            parent_block,
-            TODO_state,
-            ):
-        """
-        Used in class ParsedText to parse each individual block.
-
-        Subclass of string with the following new attributes:
-            block_TODO_state: wether the block is in a TODO/DOING/DONE etc.
-                              None otherwise.
-            block_properties: dictionnary
-            block_uuid: a random uuid. It is not the same as the one used within
-                        logseq but is used to keep track of parents.
-                        If a uuid is already present in the block properties,
-                        it will be used instead.
-            block_parent_uuid: uuid of the parent block along with their depth
-                               as a dictionnary
-            block_indentation_level: in number of spaces, with tab=4
-            block_hierarchy: list of each parent header. Empty if not under any title.
-
-        New methods:
-            add_logseq_property
-        """
-        self._stored_value = {
-            'content': block_content,
-            'properties': block_properties,
-            'hierarchy': block_hierarchy,
-            'uuid': block_uuid,
-            'indentation_level': indentation_level,
-            'parent_uuid': parent_block,
-            'TODO_state': TODO_state
-        }
-        return self
-
-    @property
-    def block_indentation_level(self):
-        return self._stored_values["indentation_level"]
-
-    @block_indentation_level.setter
-    def block_indentation_level(self, value):
-        self._stored_values["indentation_level"] = value
-        # TODO
-
-    @property
-    def block_content(self):
-        return self._stored_values["content"]
-
-    @block_content.setter
-    def block_content(self, value):
-        self._stored_values["content"] = value
-        # TODO
-
-    @property
-    def block_properties(self):
-        return self._stored_values["properties"]
-
-    @block_properties.setter
-    def block_properties(self, value):
-        self._stored_values["properties"] = value
-        # TODO
-
-    @property
-    def block_hierarchy(self):
-        return self._stored_values["hierarchy"]
-
-    @block_hierarchy.setter
-    def block_hierarchy(self, value):
-        self._stored_values["hierarchy"] = value
-        # TODO
-
-    @property
-    def block_uuid(self):
-        return self._stored_values["uuid"]
-
-    @block_uuid.setter
-    def block_uuid(self, value):
-        self._stored_values["uuid"] = value
-
-    @property
-    def block_parent_uuid(self):
-        # TODO
-        return self._stored_values["parent_uuid"]
-
-    @block_parent_uuid.setter
-    def block_parent_uuid(self, value):
-        # TODO
-        self._stored_values["parent_uuid"] = value
-
-    @property
-    def block_TODO_state(self):
-        return self._stored_values["TODO_state"]
-
-    @block_TODO_state.setter
-    def block_TODO_state(self, value):
-        # TODO
-        self._stored_values["TODO_state"] = value
-
-    def add_logseq_property(
-            self,
-            key,
-            value):
-        """
-        add a new property to the block. Both in the attribute and in the
-        block content.
-        """
-        if key in self.block_properties:
-            self.block_properties[key] = value
-            assert self.block_content.count(f"{key}::") == 1, (
-                    f"invalid number of key {key} in {self.block_content}")
-            re.sub(rf"{key}:: \w+", f"{key}:: {value}", self.block_content)
-        else:
-            self.block_properties[key] = value
-            self.block_content += "\n"
-            self.block_content += " " * (self.block_indentation_level + 2)
-            self.block_content += f"{key}:: {value}"
-        assert self.block_content.count(f"{key}::") == 1, (
-                f"invalid number of key {key} in {self.block_content}")
-
-    def del_logseq_property(
-            self,
-            key,
-            ):
-        """
-        opposite of add_logseq_property
-        """
-        assert key in self.block_properties, "key not found in properties"
-        assert self.block_content.count(f"{key}::") == 1, (
-                f"invalid number of key {key} in {self.block_content}")
-        temp = []
-        for line in self.block_content.split("\n"):
-            if re.match(rf"\s*{key}:: ", line):
-                continue
-            else:
-                temp.append(line)
-        self.block_content = "\n".join(temp)
-        assert self.block_content.count(f"{key}::") == 0, (
-                f"invalid number of key {key} in {self.block_content}")
-
-    def __str__(self):
-        """overloading of the original str to make it access the block_content
-        attribute"""
-        return self.block_content
-
-    def __repr__(self):
-        return self.__str__
-
-
-class ParsedText(str):
-    def parse_text(
-            self,
+            content,
             verbose=False,
             ):
-        content = self.__str__()
+        self.verbose = verbose
         assert isinstance(content, str), (
             f"content must be of type string, not '{type(content)}'")
 
-        # detect each block
+        # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
         for i, line in enumerate(lines):
             if not i:
@@ -189,109 +31,285 @@ class ParsedText(str):
                     if i-ii <= 0:
                         raise Exception("Endless loop")
         blocks = [line for line in lines if line is not None]
-        if verbose:
-            print(f"Number of blocks: {len(blocks)}")
+        if self.verbose:
+            print(f"Number of blocks in text: {len(blocks)}")
 
-        # detect headers
-        headers = re.findall(r"\s*- #+ \w+\n", content)
-
-        self.parsed_blocks = []
-        cur_headers = {}  # keep track of latest headers and their depth
-        latest_parents = {}
-        for index, block in enumerate(blocks):
-            assert isinstance(block, str), f"block is not string: '{block}'"
-            if verbose:
-                print(block)
-
-            # get indentation of the block
-            cur_indent = count_indentation(block)
-            if verbose:
-                print(f"Block indentation: {cur_indent}")
-
-            # keep the parent with less indentated parents
-            latest_parents = {k: v for k, v in latest_parents.items() if v < cur_indent}
-            if verbose:
-                print(f"Block parents: {latest_parents}")
-
-            # discard headers that are not deep enough anymore
-            cur_headers = {k: v for k, v in cur_headers.items() if v < cur_indent}
-            if verbose:
-                print(f"Block headers: {cur_headers}")
-
-            # get properties of each block
-            prop = re.search(r"\s*(\w+):: (\w+)", block)
-            if not prop:
-                block_properties = {}
-            else:
-                block_properties = {
-                        k.strip(): v.strip()
-                        for k, v in zip(*prop.groups())
-                        }
-            if verbose:
-                print(f"Block properties: {block_properties}")
-
-            if "id" in block_properties:
-                block_uuid = block_properties["id"]
-                if verbose:
-                    print(f"Random block uuid: {block_uuid}")
-            else:
-                # random uuid
-                block_uuid = str(uuid.uuid4())
-                if verbose:
-                    print(f"Reusing block uuid: {block_uuid}")
-
-            # get the TODO state
-            TODO_state = None
-            for keyword in ["TODO", "DOING", "DONE"]:
-                if re.match(f"- {keyword} ", block):
-                    assert not TODO_state, (
-                        f"block fits multiple TODO states: '{block}'")
-                    TODO_state = keyword
-            if verbose:
-                print(f"Block TODO_state: {TODO_state}")
-
-            parsed = ParsedBlock(block).parse(
-                    block_content=block,
-                    block_properties=block_properties,
-                    block_hierarchy=cur_headers,
-                    block_uuid=block_uuid,
-                    indentation_level=cur_indent,
-                    parent_block=latest_parents,
-                    TODO_state=TODO_state,
+        # parse each block
+        self.blocks = []
+        for index, block_str in enumerate(blocks):
+            assert isinstance(block_str, str), f"block is not string: '{block_str}'"
+            block = MdBlock(
+                    content=block_str,
+                    verbose=verbose,
                     )
+            assert block.content == block_str, (
+                "block content modifying unexpectedly")
 
-            latest_parents[block_uuid] = cur_indent
-            if block in headers:
-                cur_headers[block] = cur_indent
+            if self.verbose:
+                print("\n\n---------------------------------\n")
+                print(block)
+                print("\n")
+                print(f"* indentation level: {block.indentation_level}")
+                print(f"* TODO state: {block.TODO_state}")
+                print(f"* properties: {block.get_properties()}")
+                print(f"* UUID: {block.UUID}")
 
-            self.parsed_blocks.append(parsed)
+            self.blocks.append(block)
 
-            if verbose:
-                print("\n---------------------------------")
-
-        if not "\n".join(self.parsed_blocks) == content:
+        if not "\n".join([str(b) for b in self.blocks]) == content:
             import difflib
             print(''.join(difflib.ndiff(
                 content,
-                "\n".join(self.parsed_blocks)
+                "\n".join([str(b) for b in self.blocks])
                 )))
             raise Exception("file content differed after parsing")
         return self
 
-    def save_as(
+    def export_to(
             self,
             file_path,
             overwrite=False,
             ):
         """
-        save to file_path
+        export the blocks to file_path
         """
         if not overwrite:
             if Path(file_path).exists():
                 raise Exception(
                     "file_path already exists, use the overwrite argument")
+
+        temp = ""
+        latest_UUID = self.blocks[-1].UUID
+
+        for block in self.blocks:
+            assert str(block).startswith("- ")
+            temp += str(block)
+            if block.UUID != latest_UUID:
+                temp += "\n"
         with open(file_path, "w") as f:
-            for block in self.parsed_blocks:
-                f.write(block)
-                if block.block_uuid != self.parsed_blocks[-1].block_uuid:
-                    f.write("\n")
+            f.write(temp)
+
+    def __str__(self):
+        return "\n".join(self.blocks)
+
+    def __repr__(self):
+        return f"MdText({self.__str__()})"
+
+
+class MdBlock:
+    PROP_REGEX = re.compile(r"\s*(\w+):: (\w+)")
+    INDENT_REGEX = re.compile(r"^\s*")
+
+    def __init__(
+            self,
+            content,
+            verbose=False,
+            ):
+        """
+        Class with the following new attributes:
+            indentation_level: in number of spaces, with tab=4
+            TODO_state: wether the block is in a TODO/DOING/NOW/LATER/DONE etc.
+                              None otherwise.
+            UUID: a random UUID. It is not the same as the one used within
+                  Logseq but can be used to keep track of parents.
+                  If a UUID is already present in the block properties,
+                  it will be used instead.
+
+        And the following methods:
+            get_properties: returns a dict
+            set_property: set the value to None to delete the property
+
+        Note:
+            * For modifying the content, properties, indentation_level or
+              TODO_state: changing the value will affect the
+              other values. I.e modifying the content to manually edit
+              the indentation will have the same effect as modifying
+              the indentation_level.
+            * the other attributes can not (yet?) be altered
+            * if the UUID attribute is changed, it will be inscribed in
+              the block as a property, just like Logseq does. By default the
+              UUID is random() and not inscribed in the content. Just like
+              in Logseq.
+        """
+        assert content.strip().startswith("- "), (
+            f"stripped block content must start with '- '. Not the case here: '{content}'")
+        self._blockvalues = {
+                'content': content,
+                "UUID": self.UUID,  # retrieve or generate
+            }
+        self._changed = False  # set to True if any value was manually changed
+        self.verbose = verbose
+
+    def __str__(self):
+        """overloading of the original str to make it access the content
+        attribute"""
+        return self._blockvalues["content"]
+
+    def __repr__(self):
+        return f"MdBlock({self.__str__()})"
+
+    @property
+    def content(self):
+        return self._blockvalues["content"]
+
+    @content.setter
+    def content(self, new):
+        old = self._blockvalues["content"]
+        assert isinstance(new, str), "new content must be a string"
+        assert new.strip().startswith("- "), "stripped new content must start with '- '"
+        if new != old:
+            self._changed = True
+            self._blockvalues["content"] = new
+
+    @property
+    def indentation_level(self):
+        return self._get_indentation()
+
+    @indentation_level.setter
+    def indentation_level(self, new):
+        old = self.indentation_level
+        if old != new:
+            unindented = textwrap.dedent(self.content)
+            reindented = textwrap.indent(unindented, " " * new)
+            self.content = reindented
+            self._changed = True
+            assert new == self.indentation_level, (
+                "block intentation level apparently failed to be set")
+
+    @property
+    def TODO_state(self):
+        return self._get_TODO_state()
+
+    @TODO_state.setter
+    def TODO_state(self, new):
+        old = self._get_TODO_state()
+        assert old in ["TODO", "DOING", "NOW", "LATER", "DONE", None], (
+            f"Invalid old TODO value: {old}")
+        if old:
+            assert f"- {old} " in self.content, (
+                f"Error: previous state '- {old} ' not in block content but should have been")
+
+        assert new in ["TODO", "DOING", "NOW", "LATER", "DONE", None], (
+            f"Invalid new TODO value: {new}")
+
+        if old != new:
+            if new is None:  # just delete
+                self.content = self.content.replace(
+                        f"- {old} ",
+                        "- ",
+                        count=1,
+                        )
+            else:
+                self.content = self.content.replace(
+                        f"- {old} ",
+                        f"- {new} ",
+                        count=1)
+            self._changed = True
+
+    # METHODS:
+    def set_property(
+            self,
+            key,
+            value=None):
+        """
+        set a property to the block.
+        if the value is None, the property will be deleted
+        Note that this will also directly alter the block content.
+        """
+        if value is not None:  # add or edit prop
+            assert isinstance(value, str), "value must be a string"
+
+            if key in self.properties:  # edit prop
+                old_val = self.properties[key]
+                assert self.content.count(f"  {key}:: {old_val}") == 1, (
+                    "unable to find key/val pair: {key}/{old_val}")
+                self.content = re.sub(
+                        f"  {key}:: {old_val}",
+                        f"  {key}:: {value}",
+                        )
+            else:  # add prop
+                new = "\n" + " " * self.indentation_level
+                new += f"  {key}:: {value}"
+                self.content = new
+
+            self._changed = True
+            assert self.content.count(f"  {key}:: {value}") == 1, (
+                "unable to find key/val pair after it was set: {key}/{value}")
+
+            assert key in self.properties, (
+                "key apparently failed to be added")
+            assert value == self.properties[key], (
+                "key apparently failed to be set to the right value")
+        else:
+            assert key in self.properties, "key not found in properties"
+            assert self.content.count(f"  {key}:: ") == 1, (
+                    f"invalid number of key {key} in {self.content}")
+            temp = []
+            for line in self.content.split("\n"):
+                if not re.match(rf"\s+{key}:: ", line):
+                    temp.append(line)
+            new_content = "\n".join(temp)
+            assert new_content.count(f"{key}::") == 0, (
+                    f"invalid number of key {key} in {new_content}")
+            self.content = new_content
+            self._changed = True
+
+            assert key not in self.properties, (
+                "key apparently failed to be deleted")
+
+    def get_properties(self):
+        prop = re.search(self.PROP_REGEX, self.content)
+        if not prop:
+            properties = {}
+        else:
+            properties = {
+                    k.strip(): v.strip()
+                    for k, v in zip(*prop.groups())
+                    }
+        if self.verbose:
+            print(f"Block properties: {properties}")
+        return properties
+
+    def _get_TODO_state(self):
+        TODO_state = None
+        for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
+            if re.match(f"- {keyword} ", self.content):
+                assert not TODO_state, (
+                    "block content fits multiple TODO states: "
+                    f"'{self.content}'")
+                TODO_state = keyword
+        if self.verbose:
+            print(f"Block TODO_state: {TODO_state}")
+        return TODO_state
+
+    def _get_indentation(self):
+        """count the leading spaces of a block to know the indentation level"""
+        n = len(
+                re.search(
+                    self.INDENT_REGEX,
+                    self.content.replace("\t", " " * 4)
+                    ).group(0)
+                )
+        if self.verbose:
+            print(f"Block indentation: {n}")
+        return n
+
+    @property
+    def UUID(self):
+        block_properties = self.get_properties()
+        if "id" in block_properties:  # retrieving value set as property
+            self._blockvalues["UUID"] = block_properties["id"]
+        else:
+            if "UUID" not in self._blockvalues:
+                # generate one at random, or return the previously generated
+                # to make sure it stays the same
+                self._blockvalues["UUID"] = str(uuid.uuid4())
+        return self._blockvalues["UUID"]
+
+    @UUID.setter
+    def UUID(self, new):
+        assert isinstance(new, str), "new id must be a string"
+        assert new.count("-") == 4, "new id must contain 4 -"
+        assert new.replace("-", "").isalnum(), "new id does not look like a UUID4"
+        self.set_property(key="id", value=new)
+        self._changed = True

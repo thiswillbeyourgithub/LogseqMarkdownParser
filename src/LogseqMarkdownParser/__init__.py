@@ -20,7 +20,8 @@ def parse_file(
     assert Path(file_path).exists(), f"{file_path} not found"
 
     content = Path(file_path).read_text()
-    parsed_text = classes.ParsedText(content).parse_text(
+    parsed_text = classes.MdText(
+            content=content,
             verbose=verbose,
             )
     return parsed_text
