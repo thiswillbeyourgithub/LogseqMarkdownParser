@@ -107,7 +107,7 @@ class MdText:
             f.write(temp)
 
     def __str__(self):
-        return "\n".join(self.blocks)
+        return "\n".join([str(b) for b in self.blocks])
 
     def __repr__(self):
         return f"MdText({self.__str__()})"
