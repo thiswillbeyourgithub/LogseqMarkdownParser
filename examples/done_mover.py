@@ -26,11 +26,10 @@ def main(
     n_todo = len(Path(TODO_path).read_text().split("\n"))
 
     if Path(DONE_path).exists():
-        dones = LogseqMarkdownParser.parse_file(DONE_path, verbose)
-        n_done = len(Path(DONE_path).read_text().split("\n"))
+        dones = LogseqMarkdownParser.parse_file(DONE_path, verbose).blocks
     else:
-        dones = LogseqMarkdownParser.classes.MdText("", verboe)
-        n_done = 0
+        dones = []
+    n_done = len(dones)
 
     latest_indent = 0
     adding_mode = False
@@ -41,7 +40,7 @@ def main(
 
         if not adding_mode:
             if block.TODO_state == "DONE":
-                dones.blocks.append(block)
+                dones.append(block)
                 todos.blocks[i] = None
 
                 adding_mode = True
@@ -49,21 +48,24 @@ def main(
                 assert "- DONE " not in str(block)
         else:
             if block.indentation_level > latest_indent:
-                dones.blocks.append(block)
+                dones.append(block)
                 todos.blocks[i] = None
             else:
                 adding_mode = False
                 latest_indent = block.indentation_level
 
     todos.blocks = [b for b in todos.blocks if b is not None]
+    dones = LogseqMarkdownParser.classes.MdText(
+            content="\n".join([str(b) for b in dones]),
+            verbose=verbose)
 
-    todos.save_as(TODO_path, overwrite=True)
-    dones.save_as(DONE_path, overwrite=True)
+    todos.export_to(TODO_path, overwrite=True)
+    dones.export_to(DONE_path, overwrite=True)
 
     n_todo2 = len(Path(TODO_path).read_text().split("\n"))
     n_done2 = len(Path(DONE_path).read_text().split("\n"))
-    diff = n_todo + n_done - n_todo2 - n_done2
-    if diff not in [0, -1]:
+    diff = n_todo - n_todo2 + n_done - n_done2
+    if diff != 0:
         raise Exception(
                 "Number of lines of output documents is not the "
                 f"sum of number of lines of input documents. Diff={diff}")

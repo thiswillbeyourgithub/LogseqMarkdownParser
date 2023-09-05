@@ -97,7 +97,7 @@ class MdText:
         latest_UUID = self.blocks[-1].UUID
 
         for block in self.blocks:
-            assert str(block).startswith("- ")
+            assert str(block).strip().startswith("-")
             temp += str(block)
             if block.UUID != latest_UUID:
                 temp += "\n"
