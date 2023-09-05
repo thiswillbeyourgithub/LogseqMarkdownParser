@@ -140,7 +140,7 @@ class MdBlock:
               UUID is random() and not inscribed in the content. Just like
               in Logseq.
         """
-        assert content.strip().startswith("- "), (
+        assert content.strip().startswith("-"), (
             f"stripped block content must start with '- '. Not the case here: '{content}'")
         self._blockvalues = {
                 'content': content,
@@ -166,7 +166,7 @@ class MdBlock:
     def content(self, new):
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
-        assert new.strip().startswith("- "), "stripped new content must start with '- '"
+        assert new.strip().startswith("-"), "stripped new content must start with '-'"
         if new != old:
             self._changed = True
             self._blockvalues["content"] = new
