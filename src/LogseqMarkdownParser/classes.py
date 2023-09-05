@@ -144,7 +144,8 @@ class MdBlock:
             f"stripped block content must start with '- '. Not the case here: '{content}'")
         self._blockvalues = {
                 'content': content,
-                "UUID": self.UUID,  # retrieve or generate
+                "UUID": str(uuid.uuid4()),  # if accessing self.UUID the UUID
+                # will always updates if a id:: property was set in the content
             }
         self._changed = False  # set to True if any value was manually changed
         self.verbose = verbose
@@ -308,11 +309,6 @@ class MdBlock:
         block_properties = self.get_properties()
         if "id" in block_properties:  # retrieving value set as property
             self._blockvalues["UUID"] = block_properties["id"]
-        else:
-            if "UUID" not in self._blockvalues:
-                # generate one at random, or return the previously generated
-                # to make sure it stays the same
-                self._blockvalues["UUID"] = str(uuid.uuid4())
         return self._blockvalues["UUID"]
 
     @UUID.setter
