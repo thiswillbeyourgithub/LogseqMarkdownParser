@@ -48,7 +48,6 @@ class MdText:
             assert isinstance(block_str, str), f"block is not string: '{block_str}'"
             block = MdBlock(
                     content=block_str,
-                    verbose=verbose,
                     )
             assert block.content == block_str, (
                 "block content modifying unexpectedly")
@@ -120,7 +119,6 @@ class MdBlock:
     def __init__(
             self,
             content,
-            verbose=False,
             ):
         """
         Class with the following new attributes:
@@ -156,7 +154,6 @@ class MdBlock:
                 # will always updates if a id:: property was set in the content
             }
         self._changed = False  # set to True if any value was manually changed
-        self.verbose = verbose
 
     def __str__(self):
         """overloading of the original str to make it access the content
@@ -296,8 +293,6 @@ class MdBlock:
                     "block content fits multiple TODO states: "
                     f"'{self.content}'")
                 TODO_state = keyword
-        if self.verbose:
-            print(f"Block TODO_state: {TODO_state}")
         return TODO_state
 
     def _get_indentation(self):
@@ -308,8 +303,6 @@ class MdBlock:
                     self.content.replace("\t", " " * 4)
                     ).group(0)
                 )
-        if self.verbose:
-            print(f"Block indentation: {n}")
         return n
 
     @property
