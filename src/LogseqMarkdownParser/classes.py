@@ -38,7 +38,6 @@ class MdText:
                 first_block_reached = True
 
         blocks = [line for line in lines if line is not None]
-        self.page_property = self.page_property.strip()
 
         if self.verbose:
             print(f"Number of blocks in text: {len(blocks)}")
@@ -65,14 +64,23 @@ class MdText:
 
             self.blocks.append(block)
 
-        if not "\n".join([str(b) for b in self.blocks]) == content:
-            import difflib
-            print(''.join(difflib.ndiff(
-                content,
-                "\n".join([str(b) for b in self.blocks])
-                )))
+        reformed = self.page_property + "\n".join([str(b) for b in self.blocks])
+        if reformed != content:
+            print("\n\nError: file content differed after parsing:")
+            print(f"Length: '{len(reformed)}' vs '{len(content)}'")
+            print("Nb lines: '" + str(len(reformed.split('\n'))) + " vs '" + str(len(content.split('\n'))) + "'")
+            spco = content.split("\n")
+            spref = reformed.split("\n")
+            nref = len(spref)
+
+            print(f"Different lines between original and parsed:")
+            for i in range(len(spco)):
+                print(f"reference: {spco[i]}")
+                if i < nref and spco[i] != spref[i]:
+                    print(f"reformed: {spref[i]}")
+                print("\n------------------------\n")
+            breakpoint()
             raise Exception("file content differed after parsing")
-        return self
 
     def export_to(
             self,
