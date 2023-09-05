@@ -40,14 +40,79 @@ class ParsedBlock(str):
         New methods:
             add_logseq_property
         """
-        self.block_content = block_content
-        self.block_properties = block_properties
-        self.block_hierarchy = block_hierarchy
-        self.block_uuid = block_uuid
-        self.block_indentation_level = indentation_level
-        self.block_parent_uuid = parent_block
-        self.block_TODO_state = TODO_state
+        self._stored_value = {
+            'content': block_content,
+            'properties': block_properties,
+            'hierarchy': block_hierarchy,
+            'uuid': block_uuid,
+            'indentation_level': indentation_level,
+            'parent_uuid': parent_block,
+            'TODO_state': TODO_state
+        }
         return self
+
+    @property
+    def block_indentation_level(self):
+        return self._stored_values["indentation_level"]
+
+    @block_indentation_level.setter
+    def block_indentation_level(self, value):
+        self._stored_values["indentation_level"] = value
+        # TODO
+
+    @property
+    def block_content(self):
+        return self._stored_values["content"]
+
+    @block_content.setter
+    def block_content(self, value):
+        self._stored_values["content"] = value
+        # TODO
+
+    @property
+    def block_properties(self):
+        return self._stored_values["properties"]
+
+    @block_properties.setter
+    def block_properties(self, value):
+        self._stored_values["properties"] = value
+        # TODO
+
+    @property
+    def block_hierarchy(self):
+        return self._stored_values["hierarchy"]
+
+    @block_hierarchy.setter
+    def block_hierarchy(self, value):
+        self._stored_values["hierarchy"] = value
+        # TODO
+
+    @property
+    def block_uuid(self):
+        return self._stored_values["uuid"]
+
+    @block_uuid.setter
+    def block_uuid(self, value):
+        self._stored_values["uuid"] = value
+
+    @property
+    def block_parent_uuid(self):
+        # TODO
+        return self._stored_values["parent_uuid"]
+
+    @block_parent_uuid.setter
+    def block_parent_uuid(self, value):
+        # TODO
+        self._stored_values["parent_uuid"] = value
+
+    @property
+    def block_TODO_state(self):
+        return self._stored_values["TODO_state"]
+
+    @block_TODO_state.setter
+    def block_TODO_state(self, value):
+        # TODO
+        self._stored_values["TODO_state"] = value
 
     def add_logseq_property(
             self,
