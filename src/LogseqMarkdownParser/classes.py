@@ -17,20 +17,29 @@ class MdText:
 
         # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
+        self.page_property = ""  # the property of the whole page have to be stored separatly
+        first_block_reached = False
         for i, line in enumerate(lines):
-            if not i:
-                continue  # skip the first line
-            if not re.match(r"\s*- *", line):
-                ii = 0
-                while True:
-                    ii += 1
-                    if lines[i-ii] is not None:
-                        lines[i-ii] += "\n" + line
-                        lines[i] = None
-                        break
-                    if i-ii <= 0:
-                        raise Exception("Endless loop")
+            if not re.match(r"\s*- *", line):  # it's a property or content
+                if not first_block_reached:  # page property
+                    self.page_property += lines[i] + "\n"
+                    lines[i] = None
+                else:  # block content
+                    ii = 0
+                    while True:
+                        ii += 1
+                        if lines[i-ii] is not None:
+                            lines[i-ii] += "\n" + line
+                            lines[i] = None
+                            break
+                        if i-ii <= 0:
+                            raise Exception("Endless loop")
+            else:
+                first_block_reached = True
+
         blocks = [line for line in lines if line is not None]
+        self.page_property = self.page_property.strip()
+
         if self.verbose:
             print(f"Number of blocks in text: {len(blocks)}")
 
@@ -78,7 +87,7 @@ class MdText:
                 raise Exception(
                     "file_path already exists, use the overwrite argument")
 
-        temp = ""
+        temp = self.page_property
         latest_UUID = self.blocks[-1].UUID
 
         for block in self.blocks:
