@@ -282,7 +282,7 @@ class MdBlock:
     def _get_TODO_state(self):
         TODO_state = None
         for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
-            if re.match(f"- {keyword} ", self.content):
+            if re.match(f"- {keyword} .*", self.content.strip()):
                 assert not TODO_state, (
                     "block content fits multiple TODO states: "
                     f"'{self.content}'")
