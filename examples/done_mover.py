@@ -31,28 +31,23 @@ def main(
         dones = []
     n_done = len(dones)
 
-    latest_indent = 0
-    adding_mode = False
     for i, block in enumerate(todos.blocks):
-        # don't go too deep
-        if block.indentation_level > 6 and not adding_mode:
-            continue
-
-        if not adding_mode:
-            if block.TODO_state == "DONE":
-                dones.append(block)
-                todos.blocks[i] = None
-
-                adding_mode = True
-            else:
-                assert "- DONE " not in str(block)
+        if block is None:
+            continue  # already added
+        if block.TODO_state == "DONE":
+            dones.append(block)
+            todos.blocks[i] = None
+            for ii in range(i+1, len(todos.blocks)):
+                child = todos.blocks[ii]
+                if child.indentation_level <= dones[-1].indentation_level:
+                    # not a child, stop adding those blocks
+                    break
+                else:
+                    # is a child, also add those blocks
+                    dones.append(todos.blocks[ii])
+                    todos.blocks[ii] = None
         else:
-            if block.indentation_level > latest_indent:
-                dones.append(block)
-                todos.blocks[i] = None
-            else:
-                adding_mode = False
-                latest_indent = block.indentation_level
+            assert "- DONE " not in str(block), f"{block}"
 
     todos.blocks = [b for b in todos.blocks if b is not None]
     dones = LogseqMarkdownParser.classes.MdText(
