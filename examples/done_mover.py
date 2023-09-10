@@ -65,7 +65,7 @@ def main(
     n_diff = n_todo - len(temp_todo.split("\n")) + n_done - len(temp_done.split("\n"))
     if n_diff != 0:
         import difflib
-        print(difflib.ndiff(temp_todo, temp_done))
+        print("\n".join(list(difflib.unified_diff(temp_todo.split("\n"), temp_done.split("\n")))))
         raise Exception(
                 "Number of lines of output documents is not the "
                 f"sum of number of lines of input documents. n_diff={n_diff}")
