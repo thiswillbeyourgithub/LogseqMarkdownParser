@@ -1,4 +1,5 @@
 import LogseqMarkdownParser
+import difflib
 from pathlib import Path
 import fire
 
@@ -63,20 +64,26 @@ def main(
     temp_dones = temp_file.read_text().replace("\t", " " * 4)
     temp_file.unlink()
 
-    diff_todos = len(orig_todos.split("\n")) - len(temp_todos.split("\n"))
-    print(f"Line difference in todos: {diff_todos}")
-    diff_dones = len(orig_dones.split("\n")) - len(temp_dones.split("\n"))
-    print(f"Line difference in dones: {diff_dones}")
-    if -diff_todos != diff_dones:
-        breakpoint()
-        import difflib
-        print("\n".join(list(difflib.unified_diff(orig_todos.split("\n"), temp_todos.split("\n")))))
-        breakpoint()
-        print("\n".join(list(difflib.unified_diff(orig_dones.split("\n"), temp_dones.split("\n")))))
-        raise Exception
+    diff_todo = difflib.ndiff(
+            orig_todos.split("\n"),
+            temp_todos.split("\n"),
+            )
+    diff_done = [d for d in difflib.ndiff(
+            orig_dones.split("\n"),
+            temp_dones.split("\n"),
+            )]
+    missings = []
+    for d in diff_todo:
+        if d not in diff_done:
+            missings.append(d)
+    if missings:
+        print("Missing lines:")
+        for m in missings:
+            print(m)
 
-    todos.export_to(TODO_path, overwrite=True)
-    dones.export_to(DONE_path, overwrite=True)
+
+    #todos.export_to(TODO_path, overwrite=True)
+    #dones.export_to(DONE_path, overwrite=True)
 
 
 if __name__ == "__main__":
