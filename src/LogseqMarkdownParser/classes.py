@@ -102,6 +102,7 @@ class MdText:
             assert bil % 4 == 0, (
                     "block has an indentation level not "
                     f"divisible by 4: '{bil % 4}'")
+            block.indentation_level = block.indentation_level
             temp += str(block)
             if block.UUID != latest_UUID:
                 temp += "\n"
