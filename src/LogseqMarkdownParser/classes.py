@@ -249,7 +249,7 @@ class MdBlock:
                         f"  {key}:: {value}",
                         )
             else:  # add prop
-                new = "\n" + " " * self.indentation_level
+                new = "\n" + "\t" * (self.indentation_level // 4)
                 new += f"  {key}:: {value}"
                 self.content = new
 
