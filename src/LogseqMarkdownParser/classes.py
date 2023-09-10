@@ -97,7 +97,7 @@ class MdText:
         latest_UUID = self.blocks[-1].UUID
 
         for block in self.blocks:
-            assert str(block).strip().startswith("-")
+            assert str(block).lstrip().startswith("-")
             bill = block.indentation_level
             assert bill % 4 == 0, (
                     "block has an indentation level not "
@@ -149,7 +149,7 @@ class MdBlock:
               UUID is random() and not inscribed in the content. Just like
               in Logseq.
         """
-        assert content.strip().startswith("-"), (
+        assert content.lstrip().startswith("-"), (
             f"stripped block content must start with '- '. Not the case here: '{content}'")
         self._blockvalues = {
                 'content': content,
@@ -174,7 +174,7 @@ class MdBlock:
     def content(self, new):
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
-        assert new.strip().startswith("-"), "stripped new content must start with '-'"
+        assert new.lstrip().startswith("-"), "stripped new content must start with '-'"
         if new != old:
             self._changed = True
             self._blockvalues["content"] = new
@@ -286,7 +286,7 @@ class MdBlock:
     def _get_TODO_state(self):
         TODO_state = None
         for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
-            if re.match(f"- {keyword} .*", self.content.strip()):
+            if re.match(f"- {keyword} .*", self.content.lstrip()):
                 assert not TODO_state, (
                     "block content fits multiple TODO states: "
                     f"'{self.content}'")
