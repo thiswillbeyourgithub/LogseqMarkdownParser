@@ -185,15 +185,16 @@ class MdBlock:
 
     @indentation_level.setter
     def indentation_level(self, new):
-        old = self.indentation_level
-        if old != new:
-            assert new % 4 == 0, "new indentation level must be divisible by 4"
-            unindented = textwrap.dedent(self.content)
-            reindented = textwrap.indent(unindented, "\t" * (new // 4))
-            self.content = reindented
-            self._changed = True
-            assert new == self.indentation_level, (
-                "block intentation level apparently failed to be set")
+        # note: we don't compare the new to the old value
+        # because this way we make sure that leading spaces are replaced
+        # by tabs
+        assert new % 4 == 0, "new indentation level must be divisible by 4"
+        unindented = textwrap.dedent(self.content)
+        reindented = textwrap.indent(unindented, "\t" * (new // 4))
+        self.content = reindented
+        self._changed = True
+        assert new == self.indentation_level, (
+            "block intentation level apparently failed to be set")
 
     @property
     def TODO_state(self):
