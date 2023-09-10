@@ -23,13 +23,14 @@ def main(
 
     assert Path(TODO_path).exists, "TODO_path does not exist"
     todos = LogseqMarkdownParser.parse_file(TODO_path, verbose)
-    n_todo = len(Path(TODO_path).read_text().split("\n"))
+    orig_todos = Path(TODO_path).read_text().replace("\t", " " * 4)
 
     if Path(DONE_path).exists():
         dones = LogseqMarkdownParser.parse_file(DONE_path, verbose).blocks
+        orig_dones = Path(DONE_path).read_text().replace("\t", " " * 4)
     else:
         dones = []
-    n_done = len(dones)
+        orig_dones = ""
 
     for i, block in enumerate(todos.blocks):
         if block is None:
@@ -57,18 +58,22 @@ def main(
 
     temp_file = Path("./cache")
     todos.export_to(temp_file, overwrite=True)
-    temp_todo = temp_file.read_text().replace("\t", " " * 4)
+    temp_todos = temp_file.read_text().replace("\t", " " * 4)
     dones.export_to(temp_file, overwrite=True)
-    temp_done = temp_file.read_text().replace("\t", " " * 4)
+    temp_dones = temp_file.read_text().replace("\t", " " * 4)
     temp_file.unlink()
 
-    n_diff = n_todo - len(temp_todo.split("\n")) + n_done - len(temp_done.split("\n"))
-    if n_diff != 0:
+    diff_todos = len(orig_todos.split("\n")) - len(temp_todos.split("\n"))
+    print(f"Line difference in todos: {diff_todos}")
+    diff_dones = len(orig_dones.split("\n")) - len(temp_dones.split("\n"))
+    print(f"Line difference in dones: {diff_dones}")
+    if -diff_todos != diff_dones:
+        breakpoint()
         import difflib
-        print("\n".join(list(difflib.unified_diff(temp_todo.split("\n"), temp_done.split("\n")))))
-        raise Exception(
-                "Number of lines of output documents is not the "
-                f"sum of number of lines of input documents. n_diff={n_diff}")
+        print("\n".join(list(difflib.unified_diff(orig_todos.split("\n"), temp_todos.split("\n")))))
+        breakpoint()
+        print("\n".join(list(difflib.unified_diff(orig_dones.split("\n"), temp_dones.split("\n")))))
+        raise Exception
 
     todos.export_to(TODO_path, overwrite=True)
     dones.export_to(DONE_path, overwrite=True)
