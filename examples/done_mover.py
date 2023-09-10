@@ -37,11 +37,12 @@ def main(
         if block is None:
             continue  # already added
         if block.TODO_state == "DONE":
+            parent_indent = block.indentation_level
             dones.append(block)
             todos.blocks[i] = None
             for ii in range(i+1, len(todos.blocks)):
                 child = todos.blocks[ii]
-                if child.indentation_level <= dones[-1].indentation_level:
+                if child.indentation_level <= parent_indent:
                     # not a child, stop adding those blocks
                     break
                 else:
@@ -57,6 +58,7 @@ def main(
             content="\n".join([str(b) for b in dones]),
             verbose=verbose)
 
+    # export in a temporary file to check the output
     temp_file = Path("./cache")
     todos.export_to(temp_file, overwrite=True)
     temp_todos = temp_file.read_text().replace("\t", " " * 4)
@@ -64,27 +66,32 @@ def main(
     temp_dones = temp_file.read_text().replace("\t", " " * 4)
     temp_file.unlink()
 
-    diff_todo = difflib.ndiff(
+    # manually check that each line the is removed from todo
+    # ends up in the done file and no line were added to todo or
+    # removed from done
+    diff_todo = [d for d in difflib.ndiff(
             orig_todos.split("\n"),
             temp_todos.split("\n"),
-            )
+            )]
     diff_done = [d for d in difflib.ndiff(
             orig_dones.split("\n"),
             temp_dones.split("\n"),
             )]
     missings = []
     for d in diff_todo:
-        if d not in diff_done:
-            missings.append(d)
+        if d.startswith("+"):
+            if "-" + d[1:] not in diff_done:
+                missings.append(d)
+        elif d.startswith("-"):
+            if "+" + d[1:] not in diff_done:
+                missings.append(d)
     if missings:
         print("Missing lines:")
         for m in missings:
             print(m)
 
-
-    #todos.export_to(TODO_path, overwrite=True)
-    #dones.export_to(DONE_path, overwrite=True)
-
+    todos.export_to(TODO_path, overwrite=True)
+    dones.export_to(DONE_path, overwrite=True)
 
 if __name__ == "__main__":
     fire.Fire(main)
