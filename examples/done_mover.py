@@ -50,6 +50,7 @@ def main(
             assert "- DONE " not in str(block), f"{block}"
 
     todos.blocks = [b for b in todos.blocks if b is not None]
+    assert not [b for b in dones if b is None], "dones contained Done"
     dones = LogseqMarkdownParser.classes.MdText(
             content="\n".join([str(b) for b in dones]),
             verbose=verbose)
