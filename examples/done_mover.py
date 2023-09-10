@@ -53,7 +53,7 @@ def main(
             assert "- DONE " not in str(block), f"{block}"
 
     todos.blocks = [b for b in todos.blocks if b is not None]
-    assert not [b for b in dones if b is None], "dones contained Done"
+    assert not [b for b in dones if b is None], "dones contained None"
     dones = LogseqMarkdownParser.classes.MdText(
             content="\n".join([str(b) for b in dones]),
             verbose=verbose)
@@ -66,9 +66,8 @@ def main(
     temp_dones = temp_file.read_text().replace("\t", " " * 4)
     temp_file.unlink()
 
-    # manually check that each line the is removed from todo
-    # ends up in the done file and no line were added to todo or
-    # removed from done
+    # manually check that each line that is removed from todo
+    # ends up in the done file
     diff_todo = [d for d in difflib.ndiff(
             orig_todos.split("\n"),
             temp_todos.split("\n"),
@@ -77,6 +76,10 @@ def main(
             orig_dones.split("\n"),
             temp_dones.split("\n"),
             )]
+
+    assert (diff_todo and diff_done) or (not diff_todo and not diff_done), (
+        "something went wrong")
+
     missings = []
     for d in diff_todo:
         if d.startswith("+"):
