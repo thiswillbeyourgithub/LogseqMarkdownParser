@@ -189,7 +189,7 @@ class MdBlock:
         if old != new:
             assert new % 4 == 0, "new indentation level must be divisible by 4"
             unindented = textwrap.dedent(self.content)
-            reindented = textwrap.indent(unindented, " " * new)
+            reindented = textwrap.indent(unindented, "\t" * (new // 4))
             self.content = reindented
             self._changed = True
             assert new == self.indentation_level, (
