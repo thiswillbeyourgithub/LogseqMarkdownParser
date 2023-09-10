@@ -61,15 +61,18 @@ def main(
 
     temp_file = Path("./cache")
     todos.export_to(temp_file, overwrite=True)
-    n_todo2 = len(temp_file.read_text().split("\n"))
+    temp_todo = temp_file.read_text().replace("\t", " " * 4)
     dones.export_to(temp_file, overwrite=True)
-    n_done2 = len(temp_file.read_text().split("\n"))
+    temp_done = temp_file.read_text().replace("\t", " " * 4)
     temp_file.unlink()
-    diff = n_todo - n_todo2 + n_done - n_done2
-    if diff != 0:
+
+    n_diff = n_todo - len(temp_todo.split("\n")) + n_done - len(temp_done.split("\n"))
+    if n_diff != 0:
+        import difflib
+        print(difflib.ndiff(temp_todo, temp_done))
         raise Exception(
                 "Number of lines of output documents is not the "
-                f"sum of number of lines of input documents. Diff={diff}")
+                f"sum of number of lines of input documents. n_diff={n_diff}")
 
     todos.export_to(TODO_path, overwrite=True)
     dones.export_to(DONE_path, overwrite=True)
