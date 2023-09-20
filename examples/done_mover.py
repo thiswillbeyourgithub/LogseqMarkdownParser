@@ -31,10 +31,12 @@ def main(
     DONE_path:
         path to the file that must contain only DONEs
     """
-    if needs_internet:
+    if needs_internet and not check_internet_connection:
+        time.sleep(60)
         while not check_internet_connection():
             print("Waiting for internet connection...")
             time.sleep(60)
+        time.sleep(120)  # wait at least 2minutes for any sync to finish
 
     assert not args and not kwargs, "extra arguments detected"
     assert Path(TODO_path).exists, "TODO_path does not exist"
