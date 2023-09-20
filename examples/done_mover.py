@@ -1,13 +1,24 @@
+import urllib.request
+import time
 import LogseqMarkdownParser
 import difflib
 from pathlib import Path
 import fire
 
 
+def check_internet_connection():
+    try:
+        urllib.request.urlopen('http://www.google.com', timeout=1)
+        return True
+    except urllib.request.URLError:
+        return False
+
+
 def main(
         TODO_path,
         DONE_path,
         verbose=False,
+        needs_internet=True,
         *args,
         **kwargs,
         ):
@@ -20,9 +31,14 @@ def main(
     DONE_path:
         path to the file that must contain only DONEs
     """
-    assert not args and not kwargs, "extra arguments detected"
+    if needs_internet:
+        while not check_internet_connection():
+            print("Waiting for internet connection...")
+            time.sleep(60)
 
+    assert not args and not kwargs, "extra arguments detected"
     assert Path(TODO_path).exists, "TODO_path does not exist"
+
     todos = LogseqMarkdownParser.parse_file(TODO_path, verbose)
     orig_todos = Path(TODO_path).read_text().replace("\t", " " * 4)
 
