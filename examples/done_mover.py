@@ -4,13 +4,14 @@ import difflib
 from pathlib import Path
 import fire
 
-# import the library from the current repo instead of pypi
-import sys
-saved_path = sys.path
-sys.path.insert(0, "../src")
-sys.path.insert(0, "../src/LogseqMarkdownParser")
 import LogseqMarkdownParser
-sys.path = saved_path
+# # import the library from the current repo instead of pypi
+# import sys
+# saved_path = sys.path
+# sys.path.insert(0, "../src")
+# sys.path.insert(0, "../src/LogseqMarkdownParser")
+# import LogseqMarkdownParser
+# sys.path = saved_path
 
 def check_internet_connection():
     try:
