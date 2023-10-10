@@ -57,6 +57,7 @@ def main(
         dones = []
         orig_dones = ""
 
+    n_moved = 0
     for i, block in enumerate(todos.blocks):
         if block is None:
             continue  # already added
@@ -64,6 +65,7 @@ def main(
             parent_indent = block.indentation_level
             dones.append(block)
             todos.blocks[i] = None
+            n_moved += 1
             for ii in range(i+1, len(todos.blocks)):
                 child = todos.blocks[ii]
                 if child.indentation_level <= parent_indent:
@@ -73,6 +75,7 @@ def main(
                     # is a child, also add those blocks
                     dones.append(todos.blocks[ii])
                     todos.blocks[ii] = None
+                    n_moved += 1
         else:
             assert "- DONE " not in str(block), f"{block}"
 
@@ -117,6 +120,11 @@ def main(
         for m in missings:
             print(m)
 
+    n_todo = len(todos.blocks)
+    n_done = len(dones.blocks)
+    print(f"Moved {n_moved} blocks.")
+    print(f"Number of blocks in TODO: {n_todo}")
+    print(f"Number of blocks in DONE: {n_done}")
     todos.export_to(TODO_path, overwrite=True)
     dones.export_to(DONE_path, overwrite=True)
 
