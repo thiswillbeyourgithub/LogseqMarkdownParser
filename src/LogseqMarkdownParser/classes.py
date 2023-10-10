@@ -94,20 +94,28 @@ class MdText:
                     "file_path already exists, use the overwrite argument")
 
         temp = self.page_property
-        latest_UUID = self.blocks[-1].UUID
+        if self.blocks:
+            latest_UUID = self.blocks[-1].UUID
 
-        for block in self.blocks:
-            assert str(block).lstrip().startswith("-")
-            bil = block.indentation_level
-            assert bil % 4 == 0, (
-                    "block has an indentation level not "
-                    f"divisible by 4: '{bil % 4}'")
-            block.indentation_level = block.indentation_level
-            temp += str(block)
-            if block.UUID != latest_UUID:
-                temp += "\n"
-        with open(file_path, "w") as f:
-            f.write(temp)
+            for block in self.blocks:
+                assert str(block).lstrip().startswith("-")
+                bil = block.indentation_level
+                assert bil % 4 == 0, (
+                        "block has an indentation level not "
+                        f"divisible by 4: '{bil % 4}'")
+                block.indentation_level = block.indentation_level
+                temp += str(block)
+                if block.UUID != latest_UUID:
+                    temp += "\n"
+        else:
+            print("No blocks found")
+            #temp += "\n"
+
+        if temp.strip():
+            with open(file_path, "w") as f:
+                f.write(temp)
+        else:
+            print("No blocks nor page property found, so we won't even create an output file.")
 
     def __str__(self):
         return "\n".join([str(b) for b in self.blocks])
