@@ -59,11 +59,14 @@ def main(
         orig_dones = ""
 
     n_moved = 0
+    top_level_blocks_moved = []
     for i, block in enumerate(todos.blocks):
         if block is None:
             continue  # already added
         if block.TODO_state == "DONE":
             parent_indent = block.indentation_level
+            if parent_indent == 0:
+                top_level_blocks_moved.append(block)
             dones.append(block)
             todos.blocks[i] = None
             n_moved += 1
@@ -126,6 +129,10 @@ def main(
     print(f"Moved {n_moved} blocks.")
     print(f"Number of blocks in TODO: {n_todo}")
     print(f"Number of blocks in DONE: {n_done}")
+    if top_level_blocks_moved:
+        print(f"{len(top_level_blocks_moved)} top level blocks moved:")
+        for tp in top_level_blocks_moved:
+            print(tp)
     todos.export_to(TODO_path, overwrite=True)
     dones.export_to(DONE_path, overwrite=True)
 
