@@ -20,6 +20,8 @@ class MdText:
         self.page_property = ""  # the property of the whole page have to be stored separatly
         first_block_reached = False
         for i, line in enumerate(lines):
+            if not line.strip():
+                continue
             if not re.match(r"\s*- *", line):  # it's a property or content
                 if not first_block_reached:  # page property
                     self.page_property += lines[i] + "\n"
