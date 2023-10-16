@@ -114,6 +114,7 @@ class MdText:
             #temp += "\n"
 
         if temp.strip():
+            temp = temp.replace("    ", "\t")
             with open(file_path, "w") as f:
                 f.write(temp)
         else:
