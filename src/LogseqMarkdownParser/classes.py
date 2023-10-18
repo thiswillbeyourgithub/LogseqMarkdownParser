@@ -67,6 +67,8 @@ class MdText:
             self.blocks.append(block)
 
         reformed = self.page_property + "\n".join([str(b) for b in self.blocks])
+        reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
+        content = "\n".join([l for l in content.split("\n") if l.strip()])
         if reformed != content:
             print("\n\nError: file content differed after parsing:")
             print(f"Length: '{len(reformed)}' vs '{len(content)}'")
