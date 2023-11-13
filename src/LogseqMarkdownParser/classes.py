@@ -105,10 +105,11 @@ class MdText:
             for block in self.blocks:
                 assert str(block).lstrip().startswith("-")
                 bil = block.indentation_level
-                assert bil % 4 == 0, (
-                        "block has an indentation level not "
-                        f"divisible by 4: '{bil % 4}'")
-                block.indentation_level = block.indentation_level
+                if not bil % 4 == 0:
+                    newbil = (1 + bil // 4) * 4
+                    print("block has an indentation level not "
+                          f"divisible by 4: '{bil % 4}' in block {block}. setting indentation to {newbil}")
+                    block.indentation_level = newbil
                 temp += str(block)
                 if block.UUID != latest_UUID:
                     temp += "\n"
