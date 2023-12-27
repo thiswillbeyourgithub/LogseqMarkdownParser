@@ -1,4 +1,4 @@
-import re
+import json
 from pathlib import Path
 import fire
 
@@ -10,12 +10,14 @@ except:
 def parse_file(
         file_path,
         verbose=False,
+        as_json=False,
         ):
     """
     Parameters:
     -----------
-    file_path
-    verbose
+    file_path: path to .md file
+    verbose: default to False
+    as_json: default to False. If True will output a json string meant to be piped to jq.
     """
     assert Path(file_path).exists(), f"{file_path} not found"
 
@@ -24,13 +26,13 @@ def parse_file(
             content=content,
             verbose=verbose,
             )
-    return parsed_text
+    if as_json:
+        return json.dumps(parsed_text.as_json(), indent=4, ensure_ascii=False)
+    else:
+        return parsed_text
 
 def cli():
     return fire.Fire(parse_file)
 
 if __name__ == "__main__":
     done = fire.Fire(parse_file)
-
-    # for testing only
-    #done.save_as("./output_text.md", overwrite=False)

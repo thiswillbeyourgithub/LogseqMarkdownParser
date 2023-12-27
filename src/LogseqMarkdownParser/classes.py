@@ -130,6 +130,11 @@ class MdText:
     def __repr__(self):
         return f"MdText({self.__str__()})"
 
+    def as_json(self):
+        """returns a json format string for the whole text. Meant to be piped
+        to jq"""
+        return [block.as_json() for block in self.blocks]
+
 
 class MdBlock:
     PROP_REGEX = re.compile(r"\s*\w+:: \w+")
@@ -300,6 +305,16 @@ class MdBlock:
             key, value = found.split(":: ")
             properties[key.strip()] = value.strip()
         return properties
+
+    def as_json(self):
+        """returns the block as json representation."""
+        return {
+                "block_properties": self.get_properties(),
+                "block_content": self.content,
+                "block_indentation_level": self.indentation_level,
+                "block_TODO_state": self.TODO_state,
+                "block_UUID": self.UUID,
+                }
 
     def _get_TODO_state(self):
         TODO_state = None
