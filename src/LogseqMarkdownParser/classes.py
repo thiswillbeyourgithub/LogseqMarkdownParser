@@ -8,7 +8,7 @@ class MdText:
     "simple class that stores the markdown blocks in the self.blocks attribute"
     def __init__(
             self,
-            content,
+            content: str,
             verbose=False,
             ):
         self.verbose = verbose
@@ -87,9 +87,9 @@ class MdText:
 
     def export_to(
             self,
-            file_path,
+            file_path: str,
             overwrite=False,
-            ):
+            ) -> None:
         """
         export the blocks to file_path
         """
@@ -124,13 +124,13 @@ class MdText:
         else:
             print("No blocks nor page property found, so we won't even create an output file.")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\n".join([str(b) for b in self.blocks])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"MdText({self.__str__()})"
 
-    def as_json(self):
+    def as_json(self) -> list[dict]:
         """returns a json format string for the whole text. Meant to be piped
         to jq"""
         return [block.as_json() for block in self.blocks]
@@ -142,7 +142,7 @@ class MdBlock:
 
     def __init__(
             self,
-            content,
+            content: str,
             ):
         """
         Class with the following new attributes:
@@ -179,20 +179,20 @@ class MdBlock:
             }
         self._changed = False  # set to True if any value was manually changed
 
-    def __str__(self):
+    def __str__(self) -> str:
         """overloading of the original str to make it access the content
         attribute"""
         return self._blockvalues["content"]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"MdBlock({self.__str__()})"
 
     @property
-    def content(self):
+    def content(self) -> str:
         return self._blockvalues["content"]
 
     @content.setter
-    def content(self, new):
+    def content(self, new: str):
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
         assert new.lstrip().startswith("-"), "stripped new content must start with '-'"
@@ -201,11 +201,11 @@ class MdBlock:
             self._blockvalues["content"] = new
 
     @property
-    def indentation_level(self):
+    def indentation_level(self) -> int:
         return self._get_indentation()
 
     @indentation_level.setter
-    def indentation_level(self, new):
+    def indentation_level(self, new: int):
         # note: we don't compare the new to the old value
         # because this way we make sure that leading spaces are replaced
         # by tabs
@@ -218,11 +218,11 @@ class MdBlock:
             "block intentation level apparently failed to be set")
 
     @property
-    def TODO_state(self):
+    def TODO_state(self) -> str:
         return self._get_TODO_state()
 
     @TODO_state.setter
-    def TODO_state(self, new):
+    def TODO_state(self, new: str):
         old = self._get_TODO_state()
         assert old in ["TODO", "DOING", "NOW", "LATER", "DONE", None], (
             f"Invalid old TODO value: {old}")
@@ -298,7 +298,7 @@ class MdBlock:
             assert key not in self.properties, (
                 "key apparently failed to be deleted")
 
-    def get_properties(self):
+    def get_properties(self) -> dict:
         prop = re.findall(self.PROP_REGEX, self.content)
         properties = {}
         for found in prop:
@@ -306,7 +306,7 @@ class MdBlock:
             properties[key.strip()] = value.strip()
         return properties
 
-    def as_json(self):
+    def as_json(self) -> dict:
         """returns the block as json representation."""
         return {
                 "block_properties": self.get_properties(),
@@ -316,7 +316,7 @@ class MdBlock:
                 "block_UUID": self.UUID,
                 }
 
-    def _get_TODO_state(self):
+    def _get_TODO_state(self) -> str:
         TODO_state = None
         for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
             if re.match(f"- {keyword} .*", self.content.lstrip()):
@@ -326,7 +326,7 @@ class MdBlock:
                 TODO_state = keyword
         return TODO_state
 
-    def _get_indentation(self):
+    def _get_indentation(self) -> int:
         """count the leading spaces of a block to know the indentation level"""
         n = len(
                 re.search(
@@ -337,7 +337,7 @@ class MdBlock:
         return n
 
     @property
-    def UUID(self):
+    def UUID(self) -> str:
         block_properties = self.get_properties()
         if "id" in block_properties:  # retrieving value set as property
             self._blockvalues["UUID"] = block_properties["id"]
