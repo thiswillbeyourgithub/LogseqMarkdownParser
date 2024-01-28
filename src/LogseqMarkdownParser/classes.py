@@ -137,7 +137,7 @@ class MdText:
 
 
 class MdBlock:
-    PROP_REGEX = re.compile(r"\s*\w+:: \w+")
+    PROP_REGEX = re.compile(r"\s*\w+:: .*")
     INDENT_REGEX = re.compile(r"^\s*")
 
     def __init__(
