@@ -152,7 +152,8 @@ class MdBlock:
             UUID: a random UUID. It is not the same as the one used within
                   Logseq but can be used to keep track of parents.
                   If a UUID is already present in the block properties,
-                  it will be used instead.
+                  it will be used instead, this is the case if the UUID was
+                  set by Logseq.
 
         And the following methods:
             get_properties: returns a dict
