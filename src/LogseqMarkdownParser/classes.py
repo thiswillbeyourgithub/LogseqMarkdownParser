@@ -138,7 +138,7 @@ class MdText:
 
 
 class MdBlock:
-    PROP_REGEX = re.compile(r"\s*\w+:: .*")
+    PROP_REGEX = re.compile(r"(\s+\w[\w_-]+\w:: .+)")
     INDENT_REGEX = re.compile(r"^\s*")
 
     def __init__(
@@ -307,8 +307,16 @@ class MdBlock:
         prop = re.findall(self.PROP_REGEX, self.content)
         properties = {}
         for found in prop:
-            key, value = found.split(":: ")
-            properties[key.strip()] = value.strip()
+            while found.startswith("\n") or found.startswith("\t"):
+                found = found[1:]
+            assert found.startswith("  "), f"REGEX match an incorrect property: {found}"
+
+            try:
+                key, value = found.split(":: ")
+                properties[key.strip()] = value.strip()
+            except ValueError as err:
+                # probably failed because it was not a property but a long line that contained ::
+                raise Exception(f"Failed to parse property: {found}")
         return properties
 
     def as_json(self) -> dict:
