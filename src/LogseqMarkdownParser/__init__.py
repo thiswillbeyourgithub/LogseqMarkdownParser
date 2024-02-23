@@ -15,9 +15,13 @@ def parse_file(
     """
     Parameters:
     -----------
+
     file_path: path to .md file
-    verbose: default to False
-    as_json: default to False. If True will output a json string meant to be piped to jq.
+
+    verbose: bool, default to False
+
+    as_json: default to False.
+        If True will output a json string meant to be piped to jq.
     """
     assert Path(file_path).exists(), f"{file_path} not found"
 
