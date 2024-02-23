@@ -51,6 +51,7 @@ class MdText:
             assert isinstance(block_str, str), f"block is not string: '{block_str}'"
             block = MdBlock(
                     content=block_str,
+                    verbose=self.verbose,
                     )
             assert block.content == block_str, (
                 "block content modifying unexpectedly")
@@ -143,6 +144,7 @@ class MdBlock:
     def __init__(
             self,
             content: str,
+            verbose: bool = False,
             ):
         """
         Class with the following new attributes:
@@ -170,9 +172,11 @@ class MdBlock:
               the block as a property, just like Logseq does. By default the
               UUID is random() and not inscribed in the content. Just like
               in Logseq.
+            * verbose argument is currently unused
         """
         assert content.lstrip().startswith("-"), (
             f"stripped block content must start with '- '. Not the case here: '{content}'")
+        self.verbose = verbose
         self._blockvalues = {
                 'content': content,
                 "UUID": str(uuid.uuid4()),  # if accessing self.UUID the UUID
