@@ -37,6 +37,10 @@ def main(
         path to the file that must contain only TODOs
     DONE_path:
         path to the file that must contain only DONEs
+    verbose: bool, default False
+    needs_internet: bool, default False
+        exits directly if no valid internet connection. Used to avoid
+        issues with synchronized files across devices.
     """
     if needs_internet and not check_internet_connection:
         time.sleep(60)
