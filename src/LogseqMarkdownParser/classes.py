@@ -18,7 +18,7 @@ class MdText:
 
         # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
-        assert lines[0].startswith("- ") or ":: " in lines[0] or (len(lines)==1 and not lines[0].strip()), f"First line of document must start with '- ' or contain a page property or the document must be empty"
+        assert lines[0].lstrip().startswith("- ") or ":: " in lines[0] or (len(lines)==1 and not lines[0].strip()), f"First line of document must start with '\s*- ' or contain a page property or the document must be empty"
         lines = [l for l in lines if l.strip()]  # remove empty lines
         pageprop = ""  # as string first
         first_block_reached = False
