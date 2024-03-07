@@ -6,6 +6,7 @@ import re
 
 class MdText:
     "simple class that stores the markdown blocks in the self.blocks attribute"
+    PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]+\w:: .+)")
     def __init__(
             self,
             content: str,
@@ -18,14 +19,14 @@ class MdText:
         # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
         lines = [l for l in lines if l.strip()]  # remove empty lines
-        self.page_property = ""  # the property of the whole page have to be stored separatly
+        pageprop = ""  # as string first
         first_block_reached = False
         for i, line in enumerate(lines):
             if not line.strip():
                 lines[i] = None
             elif not re.match(r"\s*- *", line):  # it's a property or content
                 if not first_block_reached:  # page property
-                    self.page_property += lines[i] + "\n"
+                    pageprop += lines[i] + "\n"
                     lines[i] = None
                 else:  # block content
                     ii = 0
@@ -41,6 +42,16 @@ class MdText:
                 first_block_reached = True
 
         blocks = [line for line in lines if line is not None]
+
+        self.page_properties = {}  # the property of the whole page have to be stored separatly
+        prop = re.findall(self.PAGE_PROP_REGEX, pageprop)
+        for found in prop:
+            try:
+                key, value = found.split(":: ")
+                self.page_properties[key.strip()] = value.strip()
+            except ValueError as err:
+                # probably failed because it was not a property but a long line that contained ::
+                raise Exception(f"Failed to parse page property: {found}")
 
         if self.verbose:
             print(f"Number of blocks in text: {len(blocks)}")
@@ -67,7 +78,8 @@ class MdText:
 
             self.blocks.append(block)
 
-        reformed = self.page_property + "\n".join([str(b) for b in self.blocks])
+        page_prop_reformed = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
+        reformed = page_prop_reformed + "\n".join([str(b) for b in self.blocks])
         reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
         content = "\n".join([l for l in content.split("\n") if l.strip()])
         if reformed != content:
@@ -99,7 +111,7 @@ class MdText:
                 raise Exception(
                     "file_path already exists, use the overwrite argument")
 
-        temp = self.page_property
+        temp = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
         if self.blocks:
             latest_UUID = self.blocks[-1].UUID
 
@@ -138,7 +150,7 @@ class MdText:
 
 
 class MdBlock:
-    PROP_REGEX = re.compile(r"(\s+\w[\w_-]+\w:: .+)")
+    BLOCK_PROP_REGEX = re.compile(r"(\s+\w[\w_-]+\w:: .+)")
     INDENT_REGEX = re.compile(r"^\s*")
 
     def __init__(
@@ -304,7 +316,7 @@ class MdBlock:
                 "key apparently failed to be deleted")
 
     def get_properties(self) -> dict:
-        prop = re.findall(self.PROP_REGEX, self.content)
+        prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
         properties = {}
         for found in prop:
             while found.startswith("\n") or found.startswith("\t"):
