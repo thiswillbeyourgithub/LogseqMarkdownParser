@@ -168,9 +168,9 @@ class MdBlock:
                   If a UUID is already present in the block properties,
                   it will be used instead, this is the case if the UUID was
                   set by Logseq.
+            properties: a dict with the block properties
 
         And the following methods:
-            get_properties: returns a dict
             set_property: set the value to None to delete the property
 
         Note:
@@ -212,7 +212,7 @@ class MdBlock:
     def content(self, new: str):
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
-        assert new.lstrip().startswith("-"), "stripped new content must start with '-'"
+        assert new.lstrip().startswith("-") or ":: " in new, "stripped new content must start with '-' or be a property"
         if new != old:
             self._changed = True
             self._blockvalues["content"] = new
@@ -264,6 +264,30 @@ class MdBlock:
                         count=1)
             self._changed = True
 
+    @property
+    def properties(self) -> str:
+        return self._get_properties()
+
+    @properties.setter
+    def property_failedsetter(self, *args, **kwargs):
+        raise Exception("To modify the properties you must use self.set_proerty(key, value)")
+
+    def _get_properties(self) -> dict:
+        prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
+        properties = {}
+        for found in prop:
+            while found.startswith("\n") or found.startswith("\t"):
+                found = found[1:]
+            assert found.startswith("  "), f"REGEX match an incorrect property: {found}"
+
+            try:
+                key, value = found.split(":: ")
+                properties[key.strip()] = value.strip()
+            except ValueError as err:
+                # probably failed because it was not a property but a long line that contained ::
+                raise Exception(f"Failed to parse property: {found}")
+        return properties
+
     # METHODS:
     def set_property(
             self,
@@ -275,7 +299,10 @@ class MdBlock:
         Note that this will also directly alter the block content.
         """
         if value is not None:  # add or edit prop
-            assert isinstance(value, str), "value must be a string"
+            try:
+                value = str(value)
+            except Exception as err:
+                raise Exception(f"Failed to parse as string: '{value}' (err:{err})")
 
             if key in self.properties:  # edit prop
                 old_val = self.properties[key]
@@ -315,26 +342,10 @@ class MdBlock:
             assert key not in self.properties, (
                 "key apparently failed to be deleted")
 
-    def get_properties(self) -> dict:
-        prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
-        properties = {}
-        for found in prop:
-            while found.startswith("\n") or found.startswith("\t"):
-                found = found[1:]
-            assert found.startswith("  "), f"REGEX match an incorrect property: {found}"
-
-            try:
-                key, value = found.split(":: ")
-                properties[key.strip()] = value.strip()
-            except ValueError as err:
-                # probably failed because it was not a property but a long line that contained ::
-                raise Exception(f"Failed to parse property: {found}")
-        return properties
-
     def as_json(self) -> dict:
         """returns the block as json representation."""
         return {
-                "block_properties": self.get_properties(),
+                "block_properties": self.properties,
                 "block_content": self.content,
                 "block_indentation_level": self.indentation_level,
                 "block_TODO_state": self.TODO_state,
@@ -363,7 +374,7 @@ class MdBlock:
 
     @property
     def UUID(self) -> str:
-        block_properties = self.get_properties()
+        block_properties = self.properties
         if "id" in block_properties:  # retrieving value set as property
             self._blockvalues["UUID"] = block_properties["id"]
         return self._blockvalues["UUID"]
