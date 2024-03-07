@@ -93,10 +93,19 @@ class MdText:
 
             print(f"Different lines between original and parsed:")
             for i in range(len(spco)):
-                print(f"reference: '{spco[i]}'")
-                if i < nref and spco[i] != spref[i]:
-                    print(f"reformed:  '{spref[i]}'")
-                print("\n------------------------\n")
+                if len(spco) == len(spref):
+                    if spco[i] == spref[i]:
+                        continue
+                    else:
+                        print(f"Different line:")
+                        print(f"reference: '{spco[i]}'")
+                        print(f"reformed:  '{spref[i]}'")
+                        print("\n------------------------\n")
+                else:
+                    print(f"reference: '{spco[i]}'")
+                    if i < nref and spco[i] != spref[i]:
+                        print(f"reformed:  '{spref[i]}'")
+                    print("\n------------------------\n")
             raise Exception("file content differed after parsing")
 
     def export_to(
