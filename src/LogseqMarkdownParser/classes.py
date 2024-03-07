@@ -65,7 +65,7 @@ class MdText:
                     content=block_str,
                     verbose=self.verbose,
                     )
-            assert block.content == block_str, (
+            assert block.content == block_str.replace(u"\xa0", u" "), (
                 "block content modifying unexpectedly")
 
             if self.verbose:
@@ -83,7 +83,7 @@ class MdText:
         reformed = page_prop_reformed + "\n".join([str(b) for b in self.blocks])
         reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
         content = "\n".join([l for l in content.split("\n") if l.strip()])
-        if reformed != content:
+        if reformed.replace(u"\xa0", u" ") != content.replace(u"\xa0", u" "):
             print("\n\nError: file content differed after parsing:")
             print(f"Length: '{len(reformed)}' vs '{len(content)}'")
             print("Nb lines: '" + str(len(reformed.split('\n'))) + " vs '" + str(len(content.split('\n'))) + "'")
@@ -93,9 +93,9 @@ class MdText:
 
             print(f"Different lines between original and parsed:")
             for i in range(len(spco)):
-                print(f"reference: {spco[i]}")
+                print(f"reference: '{spco[i]}'")
                 if i < nref and spco[i] != spref[i]:
-                    print(f"reformed: {spref[i]}")
+                    print(f"reformed:  '{spref[i]}'")
                 print("\n------------------------\n")
             raise Exception("file content differed after parsing")
 
@@ -190,6 +190,7 @@ class MdBlock:
         assert content.lstrip().startswith("-"), (
             f"stripped block content must start with '- '. Not the case here: '{content}'")
         self.verbose = verbose
+        content = content.replace(u'\xa0', u' ')  # replace by regular space
         self._blockvalues = {
                 'content': content,
                 "UUID": str(uuid.uuid4()),  # if accessing self.UUID the UUID
@@ -214,6 +215,7 @@ class MdBlock:
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
         assert new.lstrip().startswith("-") or ":: " in new, "stripped new content must start with '-' or be a property"
+        new = new.replace(u'\xa0', u' ')
         if new != old:
             self._changed = True
             self._blockvalues["content"] = new
