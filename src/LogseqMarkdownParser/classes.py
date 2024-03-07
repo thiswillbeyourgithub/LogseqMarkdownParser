@@ -304,7 +304,9 @@ class MdBlock:
                 value = str(value)
             except Exception as err:
                 raise Exception(f"Failed to parse as string: '{value}' (err:{err})")
+
             assert value, f"Cannot add empty property"
+            assert len(value.splitlines()) == 1, "cannot add property containing newlines"
 
             if key in self.properties:  # edit prop
                 old_val = self.properties[key]
