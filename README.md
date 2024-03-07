@@ -16,6 +16,6 @@ a simple python script to load a markdown file and easily access the properties 
 * Install with `python -m pip install LogseqMarkdownParser`
 * load file with `parsed = LogseqMarkdownParser.parse_file(file_content, verbose=True)`
 * get the first block with `parsed.blocks[0]`
-* get its properties with `parsed.blocks[0].get_properties()`
+* get its properties with `parsed.blocks[0].properties`
 * add a property to a block with `parsed.blocks[0].set_property(key, value)`
 * save to path with `parsed.export_to("some/path.md")`
