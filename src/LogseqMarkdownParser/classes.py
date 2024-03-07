@@ -308,6 +308,7 @@ class MdBlock:
             assert value, f"Cannot add empty property"
             assert len(value.splitlines()) == 1, "cannot add property containing newlines"
 
+            old_content = self.content
             if key in self.properties:  # edit prop
                 old_val = self.properties[key]
                 assert self.content.count(f"  {key}:: {old_val}") == 1, (
@@ -319,7 +320,8 @@ class MdBlock:
             else:  # add prop
                 new = "\n" + "\t" * (self.indentation_level // 4)
                 new += f"  {key}:: {value}"
-                self.content = new
+                self.content += new
+                assert old_content in self.content
 
             self._changed = True
             assert self.content.count(f"  {key}:: {value}") == 1, (
@@ -329,6 +331,7 @@ class MdBlock:
                 "key apparently failed to be added")
             assert value == self.properties[key], (
                 "key apparently failed to be set to the right value")
+
         else:
             assert key in self.properties, "key not found in properties"
             assert self.content.count(f"  {key}:: ") == 1, (
