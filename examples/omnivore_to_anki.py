@@ -37,12 +37,13 @@ import LogseqMarkdownParser
 class omnivore_to_anki:
     def __init__(
         self,
-        graph_dir,
-        start_name,
-        context_size=2000,
-        n_article_to_process=-1,
-        unhighlight_others=False,
-        debug=True,
+        graph_dir: str,
+        start_name: str,
+        anki_deck_target: str,
+        context_size: int = 2000,
+        n_article_to_process: int = -1,
+        unhighlight_others: bool = False,
+        debug: bool = True,
         ):
         """
         parameters:
@@ -50,8 +51,10 @@ class omnivore_to_anki:
         graph_dir
             path to your logseq dir
 
-        start_name
+        start_name: str
             the common beginning of the name of the files created by omnivore
+        anki_deck_target: str
+            name of the anki deck to send the cards to
         context_size
             number of characters to take around each highlight
         n_article_to_process: int, default -1
@@ -68,6 +71,8 @@ class omnivore_to_anki:
         self.csize = context_size
         self.debug = debug
         self.unhighlight_others=unhighlight_others
+
+        self.anki_deck_target = anki_deck_target.replace("::", "/")
 
         # make the script interruptible
         if debug:
@@ -256,6 +261,7 @@ class omnivore_to_anki:
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
             cloze_block.set_property("omnivore-clozeparentuuid", block.UUID)
             cloze_block.set_property("id", cloze_hash[cloze])
+            cloze_block.set_property("deck", self.anki_deck_target)
 
             # add the cloze as block
             parsed.blocks.insert(ib+1, cloze_block)
