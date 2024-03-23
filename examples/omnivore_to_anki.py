@@ -49,6 +49,7 @@ class omnivore_to_anki:
         n_article_to_process: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
+        overwrite_flashcard_page: bool = False,
         debug: bool = False
             ):
         """
@@ -76,6 +77,9 @@ class omnivore_to_anki:
          unhighlight_others: bool, default False
             if True, remove highlight '==' around highlights when creating
             the cloze
+        overwrite_flashcard_page: bool, default False
+            wether to allow overwriting any ___flashcard for the article
+            if present
 
          debug: bool, default False
             currently useless
@@ -91,6 +95,8 @@ class omnivore_to_anki:
             assert isinstance(append_tag, list), "append_tag must be a list"
         self.append_tag = append_tag
         self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
+        assert isinstance(overwrite_flashcard_page, bool), "overwrite_flashcard_page must be a bool"
+        self.overwrite_flashcard_page = overwrite_flashcard_page
 
         # get list of files to check
         files = [f
@@ -303,15 +309,11 @@ class omnivore_to_anki:
             parsed.blocks[ib].TODO_state = "DONE"
 
 
-        # export to file
-        if not self.debug:
-            p(f"Overwriting page {f_article.name}")
-            parsed.export_to(f_article, overwrite=True)
-        else:
-            p(f"Saving as {f_article}___flashcards")
-            parsed.export_to(
-                f_article.parent / (f_article.name + "___flashcards"),
-                overwrite=False)
+        # create new file
+        p(f"Saving as {f_article.name}___flashcards")
+        parsed.export_to(
+            f_article.parent / (f_article.name + "___flashcards"),
+            overwrite=self.overwrite_flashcard_page)
         breakpoint()
 
     def parse_block_content(self, block):
