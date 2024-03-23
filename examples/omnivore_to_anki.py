@@ -103,6 +103,7 @@ class omnivore_to_anki:
         assert len(parsed.blocks) > 4
 
         blocks = parsed.blocks.copy()
+        n_highlight_blocks = 0
         assert len(set(b.UUID for b in blocks)) == len(blocks), "Some blocks have non unique UUID"
         for ib, block in enumerate(tqdm(blocks, unit="block")):
             # find the block containing the article
@@ -120,6 +121,7 @@ class omnivore_to_anki:
 
             # highlight
             if block.TODO_state == "TODO":
+                n_highlight_blocks += 1
                 assert prop["omnivore-type"] == "highlight", f"Unexpected block properties: {prop}"
                 assert block.indentation_level > 2, f"Unexpected block indentation: {prop.indentation_level}"
 
@@ -218,7 +220,7 @@ class omnivore_to_anki:
                         anki_clozes[block.UUID] = cloze
 
         assert article is not None, f"Failed to find article in blocks: {blocks}"
-        assert len(anki_clozes) == len(blocks)
+        assert len(anki_clozes) == n_highlight_blocks
 
         # insert cloze as blocks
         done = []
