@@ -19,6 +19,7 @@ omnivore_highlightcolor:: {{{color}}}
 '''
 """
 
+import pandas as pd
 from texrwrap import dedent
 from datetime import datetime
 from tqdm import tqdm
@@ -138,8 +139,6 @@ class omnivore_to_anki:
 
 
     def parse_one_article(self, f_article: Path) -> None:
-        anki_clozes = {}  # store cloze for each highlight block UUID
-        cloze_hash = {}
         article = None
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
@@ -149,6 +148,8 @@ class omnivore_to_anki:
         n_highlight_blocks = 0
         assert len(set(b.UUID for b in blocks)) == len(blocks), (
                 "Some blocks have non unique UUID")
+        df = pd.DataFrame(index=list(set(b.UUID for b in blocks)))
+
         for ib, block in enumerate(tqdm(blocks, unit="block")):
             # find the block containing the article
             if article is None:
@@ -156,6 +157,8 @@ class omnivore_to_anki:
                     article = blocks[ib+1]
                     art_cont = self.parse_block_content(article)
                 continue
+
+            buid = block.UUID
 
             prop = block.properties
 
@@ -208,8 +211,8 @@ class omnivore_to_anki:
                     cloze = self.context_to_cloze(high, context)
 
                     # store position and cloze
-                    anki_clozes[block.UUID] = cloze
-                    cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
+                    df.loc[buid, "cloze"] = cloze
+                    df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
 
                 elif matching_art_cont.count(high) > 1:
                     # if present several times: concatenate all the cloze as once
@@ -231,8 +234,8 @@ class omnivore_to_anki:
 
                         cloze = self.context_to_cloze(high, context)
 
-                        anki_clozes[block.UUID] = cloze
-                        cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
+                        df.loc[buid, "cloze"] = cloze
+                        df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
 
                     # else: create one cloze for each and one card containing all those clozes
                     else:
@@ -270,30 +273,29 @@ class omnivore_to_anki:
                             clozes.append(self.context_to_cloze(high, context))
                         cloze = "\n\n".join(clozes)
 
-                        anki_clozes[block.UUID] = cloze
-                        cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
+                        df.loc[buid, "cloze"] = cloze
+                        df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
 
         assert article is not None, f"Failed to find article in blocks: {blocks}"
-        assert len(anki_clozes) == n_highlight_blocks
-        assert len(anki_clozes) == len(cloze_hash)
+        assert len(df) == n_highlight_blocks
 
         # insert cloze as blocks
         done = []
-        for uuid, cloze in anki_clozes.items():
+        for buid, cloze in anki_clozes.items():
             for ib, block in enumerate(parsed.blocks):
-                if block.UUID == uuid:
+                if block.UUID == buid:
                     break
-            assert block.UUID == uuid
+            assert block.UUID == buid
 
             # turn the cloze into a block
             cloze_block = LogseqMarkdownParser.classes.MdBlock("- " + cloze, verbose=False)
             cloze_block.indentation_level = block.indentation_level + 4
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
-            cloze_block.set_property("omnivore-clozeparentuuid", block.UUID)
-            cloze_block.set_property("id", cloze_hash[cloze])
+            cloze_block.set_property("omnivore-clozeparentuuid", buid)
+            cloze_block.set_property("id", df.loc[buid, "cloze_hash"])
             cloze_block.set_property("deck", self.anki_deck_target)
             cloze_block.set_property("deck", self.anki_deck_target)
             if self.prepend_tag:
