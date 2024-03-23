@@ -19,6 +19,7 @@ omnivore_highlightcolor:: {{{color}}}
 '''
 """
 
+from texrwrap import dedent
 from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
@@ -174,9 +175,9 @@ class omnivore_to_anki:
                 assert high.startswith("> "), (
                     f"Highlight should begin with '> ': '{high}'")
                 high = high[2:].strip()
-                assert high
+                assert high, "Empty highlight?"
 
-                matching_art_cont = art_cont
+                matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont:
                     best_substring_match, min_distance = match_highlight_to_corpus(high, art_cont)
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
@@ -190,11 +191,11 @@ class omnivore_to_anki:
                 if matching_art_cont.count(high) == 1:
                     # if present only once: proceed
                     ind = matching_art_cont.index(high)
-                    before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind]
+                    before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind].strip()
                     remaining = max(self.csize * 3 // 4, self.csize - len(before)) - len(high)
                     remaining = max(remaining, len(high) * 2)
                     after = matching_art_cont[ind:ind+remaining]
-                    context = before + after
+                    context = (before + after).strip()
                     assert context
                     assert high in context
                     assert len(context) / self.csize - 1 < 1.3
