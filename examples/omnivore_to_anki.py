@@ -334,9 +334,9 @@ class omnivore_to_anki:
 
         if self.unhighlight_others:
             context = context.replace("==", "")
-            cloze = "..." + context.replace(highlight, "=={{c1 " + highlight + " }}==") + "..."
+            cloze = "..." + context.replace(highlight, " <mark> {{c1 " + highlight + " }} </mark> ") + "..."
         else:
-            cloze = "..." + context.replace(highlight, "{{c1 " + highlight + " }}") + "..."
+            cloze = "..." + context.replace(highlight, " {{c1 " + highlight + " }} ") + "..."
 
         return cloze
 
