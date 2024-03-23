@@ -146,10 +146,10 @@ class omnivore_to_anki:
         assert len(parsed.blocks) > 4
 
         page_prop = parsed.properties
-        page_labels = []
         if "labels" in page_prop:
-            labs = [lab.strip() for lab in page_prop["labels"].split(",")]
-            page_labels.extend(labs)
+            page_labels = [self.parse_label(lab) for lab in page_prop["labels"].split(",")]
+        else:
+            page_labels = []
 
         blocks = parsed.blocks.copy()
         n_highlight_blocks = 0
@@ -169,7 +169,10 @@ class omnivore_to_anki:
 
             prop = block.properties
             if "labels" in prop:
-                df.loc[buid, "block_labels"] = [lab.strip() for lab in prop["labels"].split(",")]
+                df.loc[buid, "block_labels"] = [
+                    self.parse_label(lab)
+                    for lab in prop["labels"].split(",")
+                ]
             else:
                 df.loc[buid, "block_labels"] = []
 
@@ -313,8 +316,8 @@ class omnivore_to_anki:
 
             if self.prepend_tag:
                 if "tags" in block.properties:
-                    tags = block.properties["tags"].split(",")
-                    tags = [self.prepend_tag + t.strip() for t in tags]
+                    tags = [self.parse_label(lab) for lab in block.properties["tags"].split(",")]
+                    tags = [self.prepend_tag + t for t in tags]
                 else:
                     tags = []
                 tags.extend([self.prepend_tag + pl for pl in page_labels])
@@ -377,6 +380,11 @@ class omnivore_to_anki:
                     uuid.NAMESPACE_URL,
                     article + cloze)
         )
+
+    def parse_label(self, label: str) -> str:
+        label = label.replace("[", "").replace("]", "").replace("#", "").strip()
+        assert label
+        return label
 
 
 def match_highlight_to_corpus(
