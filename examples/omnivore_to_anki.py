@@ -35,7 +35,7 @@ class omnivore_to_anki:
             graph_dir,
             start_name,
             context_size=2000,
-            unhighlight_others=True,
+            unhighlight_others=False,
             debug=True,
             ):
         """
