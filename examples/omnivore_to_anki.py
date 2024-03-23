@@ -103,6 +103,7 @@ class omnivore_to_anki:
         assert len(parsed.blocks) > 4
 
         blocks = parsed.blocks.copy()
+        assert len(set(b.UUID for b in blocks)) == len(blocks), "Some blocks have non unique UUID"
         for ib, block in enumerate(tqdm(blocks, unit="block")):
             # find the block containing the article
             if article is None:
