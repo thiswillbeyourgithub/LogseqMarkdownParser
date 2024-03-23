@@ -42,6 +42,7 @@ class omnivore_to_anki:
         anki_deck_target: str,
         context_size: int = 2000,
         n_article_to_process: int = -1,
+        recent_article_fist: bool = True,
         unhighlight_others: bool = False,
         debug: bool = True,
         ):
@@ -60,6 +61,7 @@ class omnivore_to_anki:
         n_article_to_process: int, default -1
             Only process that many articles. Useful to handle a backlog.
             -1 to disable
+        recent_article_fist: bool, default True
 
          unhighlight_others: bool, default False
             if True, remove highlight '==' around highlights when creating the cloze
@@ -96,7 +98,8 @@ class omnivore_to_anki:
 
         files = sorted(
                 files,
-                key=lambda f: _parse_date(f)
+                key=lambda f: _parse_date(f),
+                reverse=True if recent_article_fist else False,
                 )
 
         # filter only those that contain TODO
