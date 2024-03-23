@@ -35,13 +35,14 @@ import LogseqMarkdownParser
 
 class omnivore_to_anki:
     def __init__(
-            self,
-            graph_dir,
-            start_name,
-            context_size=2000,
-            unhighlight_others=False,
-            debug=True,
-            ):
+        self,
+        graph_dir,
+        start_name,
+        context_size=2000,
+        n_article_to_process=-1,
+        unhighlight_others=False,
+        debug=True,
+        ):
         """
         parameters:
         ----------
@@ -52,6 +53,9 @@ class omnivore_to_anki:
             the common beginning of the name of the files created by omnivore
         context_size
             number of characters to take around each highlight
+        n_article_to_process: int, default -1
+            Only process that many articles. Useful to handle a backlog.
+            -1 to disable
 
          unhighlight_others: bool, default False
             if True, remove highlight '==' around highlights when creating the cloze
@@ -95,7 +99,7 @@ class omnivore_to_anki:
 
         print(f"Found {len(files)} omnivore articles to create anki cards for")
 
-        for f_article in tqdm(files, unit="article"):
+        for f_article in tqdm(files[:n_article_to_process], unit="article"):
             self.parse_one_article(f_article)
 
 
