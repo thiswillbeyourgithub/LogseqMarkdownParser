@@ -111,7 +111,7 @@ class omnivore_to_anki:
                     art_cont = self.parse_block_content(article)
                 continue
 
-            prop = block.get_properties()
+            prop = block.properties
 
             # check that no anki cards were created already
             if "omnivore-type" in prop:
@@ -251,7 +251,7 @@ class omnivore_to_anki:
 
     def parse_block_content(self, block):
         cont = block.content
-        prop = block.get_properties()
+        prop = block.properties
         for k, v in prop.items():
             cont = cont.replace(f"{k}:: {v}", "")
         if block.TODO_state:
