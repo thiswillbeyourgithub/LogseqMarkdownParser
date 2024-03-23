@@ -283,7 +283,7 @@ class omnivore_to_anki:
 
         # insert cloze as blocks
         done = []
-        for buid, cloze in anki_clozes.items():
+        for buid, cloze in anki_clozes.iterrows():
             for ib, block in enumerate(parsed.blocks):
                 if block.UUID == buid:
                     break
