@@ -41,6 +41,8 @@ class omnivore_to_anki:
         start_name: str,
         anki_deck_target: str,
         context_size: int = 2000,
+        prepend_tag: str = None,
+        append_tag: List[str] = None,
         n_article_to_process: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
@@ -58,6 +60,11 @@ class omnivore_to_anki:
             name of the anki deck to send the cards to
         context_size
             number of characters to take around each highlight
+        prepend_tag: str, default None
+            if a string, will be used to specify a parent tag to
+            any tag specified in the card
+        append_tag: list, default None
+            list of tags to add to each new cloze
         n_article_to_process: int, default -1
             Only process that many articles. Useful to handle a backlog.
             -1 to disable
@@ -75,6 +82,10 @@ class omnivore_to_anki:
         self.unhighlight_others=unhighlight_others
 
         self.anki_deck_target = anki_deck_target.replace("::", "/")
+        if append_tag:
+            assert isinstance(append_tag, list), "append_tag must be a list"
+        self.append_tag = append_tag
+        self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
 
         # make the script interruptible
         if debug:
@@ -265,6 +276,19 @@ class omnivore_to_anki:
             cloze_block.set_property("omnivore-clozeparentuuid", block.UUID)
             cloze_block.set_property("id", cloze_hash[cloze])
             cloze_block.set_property("deck", self.anki_deck_target)
+            cloze_block.set_property("deck", self.anki_deck_target)
+            if self.prepend_tag:
+                if "tags" in cloze_block.properties:
+                    tags = cloze_block.properties["tags"].split(",")
+                    newtags = [self.prepend_tag + t.strip() for t in tags]
+                    cloze_block.set_property("tags", ",".join(newtags))
+            if self.append_tag:
+                if "tags" in cloze_block.properties:
+                    tags = cloze_block.properties["tags"].split(",")
+                    tags += self.append_tag
+                else:
+                    tags = self.append_tag
+                cloze_block.set_property("tags", ",".join(tags))
 
             # add the cloze as block
             parsed.blocks.insert(ib+1, cloze_block)
