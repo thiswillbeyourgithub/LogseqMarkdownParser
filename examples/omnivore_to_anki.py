@@ -292,7 +292,8 @@ class omnivore_to_anki:
         assert article is not None, f"Failed to find article in blocks: {blocks}"
         assert len(df) == n_highlight_blocks
 
-        # insert cloze as blocks
+        # insert cloze as blocks in a new page
+        newpage = LogseqMarkdownParser.classes.MdText(content="", verbose=False)
         done = []
         for buid, cloze in anki_clozes.iterrows():
             for ib, block in enumerate(parsed.blocks):
@@ -329,8 +330,9 @@ class omnivore_to_anki:
                     tags = self.append_tag
                 cloze_block.set_property("tags", ",".join(tags))
 
-            # add the cloze as block
-            parsed.blocks.insert(ib+1, cloze_block)
+            # add the cloze as block in the newpage
+            newpage.blocks.append(cloze_block)
+
             if self.only_process_TODO_highlight_blocks:
                 assert parsed.blocks[ib].TODO_state = "TODO", "Expected a TODO highlight block"
                 parsed.blocks[ib].TODO_state = "DONE"
@@ -338,9 +340,10 @@ class omnivore_to_anki:
 
         # create new file
         p(f"Saving as {f_article.name}___flashcards")
-        parsed.export_to(
+        newpage.export_to(
             f_article.parent / (f_article.name + "___flashcards"),
             overwrite=self.overwrite_flashcard_page)
+        parsed.export_to(f_article, overwrite=True)
         breakpoint()
 
     def parse_block_content(self, block):
