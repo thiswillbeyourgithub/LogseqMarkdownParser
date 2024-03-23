@@ -25,6 +25,7 @@ from pathlib import Path
 import fire
 import pdb
 import signal
+import uuid
 
 from typing import List
 from math import inf
@@ -105,6 +106,7 @@ class omnivore_to_anki:
 
     def parse_one_article(self, f_article):
         anki_clozes = {}  # store cloze for each highlight block UUID
+        cloze_hash = {}
         article = None
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
@@ -168,6 +170,7 @@ class omnivore_to_anki:
 
                     # store position and cloze
                     anki_clozes[block.UUID] = cloze
+                    cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
 
                 elif matching_art_cont.count(high) > 1:
                     # if present several times: concatenate all the cloze as once
@@ -190,6 +193,7 @@ class omnivore_to_anki:
                         cloze = self.context_to_cloze(high, context)
 
                         anki_clozes[block.UUID] = cloze
+                        cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
 
                     # else: create one cloze for each and one card containing all those clozes
                     else:
@@ -228,11 +232,13 @@ class omnivore_to_anki:
                         cloze = "\n\n".join(clozes)
 
                         anki_clozes[block.UUID] = cloze
+                        cloze_hash[cloze] = self.cloze_hash(cloze, art_cont)
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
 
         assert article is not None, f"Failed to find article in blocks: {blocks}"
         assert len(anki_clozes) == n_highlight_blocks
+        assert len(anki_clozes) == len(cloze_hash)
 
         # insert cloze as blocks
         done = []
@@ -248,6 +254,7 @@ class omnivore_to_anki:
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
             cloze_block.set_property("omnivore-clozeparentuuid", block.UUID)
+            cloze_block.set_property("id", cloze_hash[cloze])
 
             # add the cloze as block
             parsed.blocks.insert(ib+1, cloze_block)
@@ -286,6 +293,13 @@ class omnivore_to_anki:
             cloze = "..." + context.replace(highlight, "{{c1 " + highlight + " }}") + "..."
 
         return cloze
+
+    def cloze_hash(self, cloze: str, article: str) -> str:
+        return str(
+                uuid.uuid3(
+                    uuid.NAMESPACE_URL,
+                    article + cloze)
+        )
 
 
 def match_highlight_to_corpus(
