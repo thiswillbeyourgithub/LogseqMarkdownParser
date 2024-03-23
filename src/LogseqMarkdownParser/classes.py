@@ -6,7 +6,7 @@ import re
 
 class MdText:
     "simple class that stores the markdown blocks in the self.blocks attribute"
-    PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]+\w:: .+)")
+    PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]*\w:: .+)")
     def __init__(
             self,
             content: str,
@@ -160,7 +160,7 @@ class MdText:
 
 
 class MdBlock:
-    BLOCK_PROP_REGEX = re.compile(r"(\s+\w[\w_-]+\w:: .+)")
+    BLOCK_PROP_REGEX = re.compile(r"(\s+\w[\w_-]*\w:: .+)")
     INDENT_REGEX = re.compile(r"^\s*")
 
     def __init__(
