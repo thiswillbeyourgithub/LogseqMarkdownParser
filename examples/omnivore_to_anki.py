@@ -270,6 +270,7 @@ class omnivore_to_anki:
         f_article.unlink()
         # rename
         (f_article.parent / (f_article.name + "_temp")).rename(f_article)
+        breakpoint()
 
     def parse_block_content(self, block):
         cont = block.content
