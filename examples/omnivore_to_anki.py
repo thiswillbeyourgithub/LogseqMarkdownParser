@@ -120,6 +120,7 @@ class omnivore_to_anki:
         print(f"Found {len(files)} omnivore articles to create anki cards for")
 
         for f_article in tqdm(files[:n_article_to_process], unit="article"):
+            print(f"Processing {f_article}")
             self.parse_one_article(f_article)
 
 
