@@ -267,13 +267,13 @@ class MdBlock:
                 self.content = self.content.replace(
                         f"- {old} ",
                         "- ",
-                        count=1,
+                        1,
                         )
             else:
                 self.content = self.content.replace(
                         f"- {old} ",
                         f"- {new} ",
-                        count=1)
+                        1)
             self._changed = True
 
     @property
