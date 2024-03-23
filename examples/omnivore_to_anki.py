@@ -227,13 +227,13 @@ class omnivore_to_anki:
         # insert cloze as blocks
         done = []
         for uuid, cloze in anki_clozes.items():
-            for ib, block in parsed.blocks:
+            for ib, block in enumerate(parsed.blocks):
                 if block.UUID == uuid:
                     break
             assert block.UUID == uuid
 
             # turn the cloze into a block
-            cloze_block = LogseqMarkdownParser.MdBlock("- " + cloze, verbose=False)
+            cloze_block = LogseqMarkdownParser.classes.MdBlock("- " + cloze, verbose=False)
             cloze_block.indentation_level = block.indentation_level + 4
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
