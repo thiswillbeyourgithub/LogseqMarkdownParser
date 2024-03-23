@@ -159,7 +159,7 @@ class omnivore_to_anki:
                     # store position and cloze
                     anki_clozes[block.UUID] = cloze
 
-                else:
+                elif matching_art_cont.count(high) > 1:
                     # if present several times: concatenate all the cloze as once
                     # this is by far the simplest way to do it
 
@@ -218,6 +218,8 @@ class omnivore_to_anki:
                         cloze = "\n\n".join(clozes)
 
                         anki_clozes[block.UUID] = cloze
+                else:
+                    raise ValueError(f"Highlight was not part of the article? {high}")
 
         assert article is not None, f"Failed to find article in blocks: {blocks}"
         assert len(anki_clozes) == n_highlight_blocks
