@@ -33,6 +33,10 @@ from math import inf
 from Levenshtein import distance as ld
 import LogseqMarkdownParser
 
+def p(text: str) -> str:
+    "simple printer"
+    tqdm.write(text)
+
 
 class omnivore_to_anki:
     def __init__(
@@ -117,10 +121,10 @@ class omnivore_to_anki:
         files = [f for f in files if "- TODO " in f.read_text()]
         assert files, "No files contained TODO"
 
-        print(f"Found {len(files)} omnivore articles to create anki cards for")
+        p(f"Found {len(files)} omnivore articles to create anki cards for")
 
         for f_article in tqdm(files[:n_article_to_process], unit="article"):
-            print(f"Processing {f_article}")
+            p(f"Processing {f_article}")
             self.parse_one_article(f_article)
 
 
@@ -297,7 +301,7 @@ class omnivore_to_anki:
 
 
         # export to file
-        print(f"Exporting {f_article}")
+        p(f"Exporting {f_article}")
         parsed.export_to(f_article.parent / (f_article.name + "_temp"), overwrite=False)
 
         # delete old
