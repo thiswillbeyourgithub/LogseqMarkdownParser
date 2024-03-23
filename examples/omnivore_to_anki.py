@@ -33,6 +33,7 @@ from math import inf
 from Levenshtein import distance as ld
 import LogseqMarkdownParser
 
+
 def p(text: str) -> str:
     "simple printer"
     tqdm.write(text)
@@ -50,8 +51,8 @@ class omnivore_to_anki:
         n_article_to_process: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
-        debug: bool = True,
-        ):
+        debug: bool = True
+            ):
         """
         parameters:
         ----------
@@ -75,7 +76,8 @@ class omnivore_to_anki:
         recent_article_fist: bool, default True
 
          unhighlight_others: bool, default False
-            if True, remove highlight '==' around highlights when creating the cloze
+            if True, remove highlight '==' around highlights when creating
+            the cloze
 
          debug: bool, default True
         """
@@ -83,7 +85,7 @@ class omnivore_to_anki:
 
         self.csize = context_size
         self.debug = debug
-        self.unhighlight_others=unhighlight_others
+        self.unhighlight_others = unhighlight_others
 
         self.anki_deck_target = anki_deck_target.replace("::", "/")
         if append_tag:
@@ -93,7 +95,9 @@ class omnivore_to_anki:
 
         # make the script interruptible
         if debug:
-            signal.signal(signal.SIGINT, (lambda signal, frame : pdb.set_trace()))
+            signal.signal(
+                signal.SIGINT,
+                (lambda signal, frame : pdb.set_trace()))
 
         # get list of files to check
         files = [f
@@ -102,7 +106,8 @@ class omnivore_to_anki:
                  and f.name.endswith(".md")
                  ]
 
-        assert files, f"No files found in {graph_dir} with start_name {start_name}"
+        assert files, (
+                f"No files found in {graph_dir} with start_name {start_name}")
 
         # sort files by date
         def _parse_date(path):
@@ -128,7 +133,7 @@ class omnivore_to_anki:
             self.parse_one_article(f_article)
 
 
-    def parse_one_article(self, f_article):
+    def parse_one_article(self, f_article: Path) -> None:
         anki_clozes = {}  # store cloze for each highlight block UUID
         cloze_hash = {}
         article = None
@@ -138,7 +143,8 @@ class omnivore_to_anki:
 
         blocks = parsed.blocks.copy()
         n_highlight_blocks = 0
-        assert len(set(b.UUID for b in blocks)) == len(blocks), "Some blocks have non unique UUID"
+        assert len(set(b.UUID for b in blocks)) == len(blocks), (
+                "Some blocks have non unique UUID")
         for ib, block in enumerate(tqdm(blocks, unit="block")):
             # find the block containing the article
             if article is None:
@@ -151,19 +157,23 @@ class omnivore_to_anki:
 
             # check that no anki cards were created already
             if "omnivore-type" in prop:
-                assert prop["omnivore-type"] != "highlightcloze", f"Cloze already created?! {prop} for {block}"
+                assert prop["omnivore-type"] != "highlightcloze", (
+                    f"Cloze already created?! {prop} for {block}")
 
             # highlight
             if block.TODO_state == "TODO":
                 n_highlight_blocks += 1
-                assert prop["omnivore-type"] == "highlight", f"Unexpected block properties: {prop}"
-                assert block.indentation_level > 2, f"Unexpected block indentation: {prop.indentation_level}"
+                assert prop["omnivore-type"] == "highlight", (
+                        f"Unexpected block properties: {prop}")
+                assert block.indentation_level > 2, (
+                    f"Unexpected block indentation: {prop.indentation_level}")
 
                 # get content of highlight
                 high = self.parse_block_content(block)
 
                 # remove quot indent
-                assert high.startswith("> "), f"Highlight should begin with '> ': '{high}'"
+                assert high.startswith("> "), (
+                    f"Highlight should begin with '> ': '{high}'")
                 high = high[2:].strip()
                 assert high
 
