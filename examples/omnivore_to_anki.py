@@ -26,6 +26,10 @@ import fire
 import pdb
 import signal
 
+from typing import List
+from math import inf
+
+from Levenshtein import distance as ld
 import LogseqMarkdownParser
 
 
@@ -133,21 +137,23 @@ class omnivore_to_anki:
                 high = high[2:].strip()
                 assert high
 
+                matching_art_cont = art_cont
                 if high not in art_cont:
-                    breakpoint()
-                assert high in art_cont, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
+                    best_substring_match, min_distance = match_highlight_to_corpus(high, art_cont)
+                    matching_art_cont = art_cont.replace(best_substring_match, high, 1)
+                assert high in matching_art_cont, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
 
                 # TODO check position of the highlight but for now it's
                 # always stuck at 0
                 if str(prop["omnivore_highlightposition"]) != "0":
                     breakpoint()
 
-                if art_cont.count(high) == 1:
+                if matching_art_cont.count(high) == 1:
                     # if present only once: proceed
-                    ind = art_cont.index(high)
-                    before = art_cont[max(0, ind-self.csize//2):ind]
-                    remaining = max(self.csize // 2, self.csize - len(before)) + len(high)
-                    after = art_cont[ind:ind+remaining]
+                    ind = matching_art_cont.index(high)
+                    before = matching_art_cont[max(0, ind-self.csize//2):ind]
+                    remaining = max(self.csize * 3 // 4, self.csize - len(before)) - len(high)
+                    after = matching_art_cont[ind:ind+remaining]
                     context = before + after
                     assert context
                     assert high in context
@@ -165,17 +171,17 @@ class omnivore_to_anki:
 
                     # getting all positions in the text
                     positions = []
-                    for ic in range(art_cont.count(high)):
+                    for ic in range(matching_art_cont.count(high)):
                         if not positions:
-                            positions.append(art_cont.index(high))
+                            positions.append(matching_art_cont.index(high))
                         else:
-                            positions.append(art_cont.index(high, positions[-1]+1))
+                            positions.append(matching_art_cont.index(high, positions[-1]+1))
 
                     # first case: all appearances are withing the context_size
                     if max(positions) - min(positions) < self.csize:
-                        context = art_cont[min(positions) - self.csize//4:max(positions)+self.csize // 4]
+                        context = matching_art_cont[min(positions) - self.csize//4:max(positions)+self.csize // 4]
                         assert len(context) < 2 * self.csize
-                        assert context.count(high) == art_cont.count(high)
+                        assert context.count(high) == matching_art_cont.count(high)
 
                         cloze = self.context_to_cloze(high, context)
 
@@ -213,7 +219,7 @@ class omnivore_to_anki:
 
                         clozes = []
                         for r1, r2 in ranges:
-                            context = art_cont[r1 - self.csize//4:r2+self.csize//4]
+                            context = matching_art_cont[r1 - self.csize//4:r2+self.csize//4]
                             clozes.append(self.context_to_cloze(high, context))
                         cloze = "\n\n".join(clozes)
 
@@ -248,7 +254,6 @@ class omnivore_to_anki:
         print(f"Exporting {f_article}")
         parsed.export_to(f_article.parent / (f_article.name + "_temp"), overwrite=False)
 
-        breakpoint()
         # delete old
         f_article.unlink()
         # rename
@@ -279,6 +284,84 @@ class omnivore_to_anki:
         return cloze
 
 
+def match_highlight_to_corpus(
+        query: str,
+        corpus: str,
+        case_sensitive: bool = True,
+        step_factor: int = 128,
+        favour_smallest: bool = False,
+    ) -> List:
+    '''
+    Source: https://stackoverflow.com/questions/36013295/find-best-substring-match
+    Returns the substring of the corpus with the least Levenshtein distance from the query
+    (May not always return optimal answer).
+
+    Arguments
+    - query: str
+    - corpus: str
+    - case_sensitive: bool
+    - step_factor: int  
+        Influences the resolution of the thorough search once the general region is found.
+        The increment in ngrams lengths used for the thorough search is calculated as len(query)//step_factor.
+        Increasing this increases the number of ngram lengths used in the thorough search and increases the chances 
+        of getting the optimal solution at the cost of runtime and memory.
+    - favour_smaller: bool
+        Once the region of the best match is found, the search proceeds from larger to smaller ngrams or vice versa.
+        If two or more ngrams have the same minimum distance then this flag controls whether the largest or smallest
+        is returned.
+
+    Returns  
+    [Best matching substring of corpus, Levenshtein distance of closest match]
+    '''
+
+    if not case_sensitive:
+        query = query.casefold()
+        corpus = corpus.casefold()
+
+    corpus_len = len(corpus)
+    query_len = len(query)
+    query_len_by_2 = max(query_len // 2, 1)
+    query_len_by_step_factor = max(query_len // step_factor, 1)
+
+    closest_match_idx = 0
+    min_dist = inf
+    # Intial search of corpus checks ngrams of the same length as the query
+    # Step is half the length of the query.
+    # This is found to be good enough to find the general region of the best match in the corpus
+    corpus_ngrams = [corpus[i:i+query_len] for i in range(0, corpus_len-query_len+1, query_len_by_2)]
+    for idx, ngram in enumerate(corpus_ngrams):
+        ngram_dist = ld(ngram, query)
+        if ngram_dist < min_dist:
+            min_dist = ngram_dist
+            closest_match_idx = idx
+
+    closest_match_idx = closest_match_idx * query_len_by_2
+    closest_match = corpus[closest_match_idx: closest_match_idx + query_len]
+    left = max(closest_match_idx - query_len_by_2 - 1, 0)
+    right = min((closest_match_idx+query_len-1) + query_len_by_2 + 2, corpus_len)
+    narrowed_corpus = corpus[left: right]
+    narrowed_corpus_len = len(narrowed_corpus)
+
+    # Once we have the general region of the best match we do a more thorough search in the region
+    # This is done by considering ngrams of various lengths in the region using a step of 1
+    ngram_lens = [l for l in range(narrowed_corpus_len, query_len_by_2 - 1, -query_len_by_step_factor)]
+    if favour_smallest:
+        ngram_lens = reversed(ngram_lens)
+    # Construct sets of ngrams where each set has ngrams of a particular length made over the region with a step of 1
+    narrowed_corpus_ngrams = [
+        [narrowed_corpus[i:i+ngram_len] for i in range(0, narrowed_corpus_len-ngram_len+1)]
+        for ngram_len in ngram_lens
+    ]
+
+    # Thorough search of the region in which the best match exists
+    for ngram_set in narrowed_corpus_ngrams:
+        for ngram in ngram_set:
+            ngram_dist = ld(ngram, query)
+            if ngram_dist < min_dist:
+                min_dist = ngram_dist
+                closest_match = ngram
+
+    return closest_match, min_dist
 
 
 if __name__ == "__main__":
