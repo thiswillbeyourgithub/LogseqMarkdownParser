@@ -80,6 +80,8 @@ class omnivore_to_anki:
             the cloze
 
          debug: bool, default True
+            increase debug prints and instead of replacing the article
+            will instead create a new article with __ankified append
         """
         assert Path(graph_dir).exists(), f"Dir not found: {graph_dir}"
 
@@ -311,13 +313,14 @@ class omnivore_to_anki:
 
 
         # export to file
-        p(f"Exporting {f_article}")
-        parsed.export_to(f_article.parent / (f_article.name + "_temp"), overwrite=False)
-
-        # delete old
-        f_article.unlink()
-        # rename
-        (f_article.parent / (f_article.name + "_temp")).rename(f_article)
+        if not self.debug:
+            p(f"Overwriting page {f_article.name}")
+            parsed.export_to(f_article, overwrite=True)
+        else:
+            p(f"Saving as {f_article}__ankified")
+            parsed.export_to(
+                f_article.parent / (f_article.name + "__ankified"),
+                overwrite=False)
         breakpoint()
 
     def parse_block_content(self, block):
