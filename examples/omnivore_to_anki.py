@@ -71,7 +71,8 @@ class omnivore_to_anki:
             if a string, will be used to specify a parent tag to
             any tag specified in the card
         append_tag: list, default None
-            list of tags to add to each new cloze
+            list of tags to add to each new cloze. This will not be
+            prepended by prepen_tag
         n_article_to_process: int, default -1
             Only process that many articles. Useful to handle a backlog.
             -1 to disable
@@ -144,6 +145,12 @@ class omnivore_to_anki:
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
         assert len(parsed.blocks) > 4
 
+        page_prop = parsed.properties
+        page_labels = []
+        if "labels" in page_prop:
+            labs = [lab.strip() for lab in page_prop["labels"].split(",")]
+            page_labels.extend(labs)
+
         blocks = parsed.blocks.copy()
         n_highlight_blocks = 0
         assert len(set(b.UUID for b in blocks)) == len(blocks), (
@@ -161,6 +168,10 @@ class omnivore_to_anki:
             buid = block.UUID
 
             prop = block.properties
+            if "labels" in prop:
+                df.loc[buid, "block_labels"] = [lab.strip() for lab in prop["labels"].split(",")]
+            else:
+                df.loc[buid, "block_labels"] = []
 
             # check that no anki cards were created already
             if "omnivore-type" in prop:
@@ -298,14 +309,21 @@ class omnivore_to_anki:
             cloze_block.set_property("id", df.loc[buid, "cloze_hash"])
             cloze_block.set_property("deck", self.anki_deck_target)
             cloze_block.set_property("deck", self.anki_deck_target)
+
             if self.prepend_tag:
-                if "tags" in cloze_block.properties:
-                    tags = cloze_block.properties["tags"].split(",")
-                    newtags = [self.prepend_tag + t.strip() for t in tags]
-                    cloze_block.set_property("tags", ",".join(newtags))
+                if "tags" in block.properties:
+                    tags = block.properties["tags"].split(",")
+                    tags = [self.prepend_tag + t.strip() for t in tags]
+                else:
+                    tags = []
+                tags.extend([self.prepend_tag + pl for pl in page_labels])
+                tags.extend([self.prepend_tag + pl for pl in df.loc[buid, "block_labels"]])
+                if tags:
+                    cloze_block.set_property("tags", ",".join(tags))
+
             if self.append_tag:
-                if "tags" in cloze_block.properties:
-                    tags = cloze_block.properties["tags"].split(",")
+                if "tags" in block.properties:
+                    tags = block.properties["tags"].split(",")
                     tags += self.append_tag
                 else:
                     tags = self.append_tag
