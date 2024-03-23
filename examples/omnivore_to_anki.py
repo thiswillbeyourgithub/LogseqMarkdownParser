@@ -51,6 +51,7 @@ class omnivore_to_anki:
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
         overwrite_flashcard_page: bool = False,
+        only_process_TODO_highlight_blocks: bool = True,
         debug: bool = False
             ):
         """
@@ -81,6 +82,7 @@ class omnivore_to_anki:
         overwrite_flashcard_page: bool, default False
             wether to allow overwriting any ___flashcard for the article
             if present
+        only_process_TODO_highlight_blocks: bool, default True
 
          debug: bool, default False
             currently useless
@@ -98,6 +100,8 @@ class omnivore_to_anki:
         self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
         assert isinstance(overwrite_flashcard_page, bool), "overwrite_flashcard_page must be a bool"
         self.overwrite_flashcard_page = overwrite_flashcard_page
+        assert isinstance(only_process_TODO_highlight_blocks, bool), "only_process_TODO_highlight_blocks must be a bool"
+        self.only_process_TODO_highlight_blocks = only_process_TODO_highlight_blocks
 
         # get list of files to check
         files = [f
@@ -161,7 +165,7 @@ class omnivore_to_anki:
                     f"Cloze already created?! {prop} for {block}")
 
             # highlight
-            if block.TODO_state == "TODO":
+            if (self.only_process_TODO_highlight_blocks and block.TODO_state == "TODO") or (not self.only_process_TODO_highlight_blocks):
                 n_highlight_blocks += 1
                 assert prop["omnivore-type"] == "highlight", (
                         f"Unexpected block properties: {prop}")
@@ -307,7 +311,9 @@ class omnivore_to_anki:
 
             # add the cloze as block
             parsed.blocks.insert(ib+1, cloze_block)
-            parsed.blocks[ib].TODO_state = "DONE"
+            if self.only_process_TODO_highlight_blocks:
+                assert parsed.blocks[ib].TODO_state = "TODO", "Expected a TODO highlight block"
+                parsed.blocks[ib].TODO_state = "DONE"
 
 
         # create new file
