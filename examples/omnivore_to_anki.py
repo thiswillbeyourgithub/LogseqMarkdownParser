@@ -53,7 +53,7 @@ class omnivore_to_anki:
         context_size
             number of characters to take around each highlight
 
-         unhighlight_others: bool, default True
+         unhighlight_others: bool, default False
             if True, remove highlight '==' around highlights when creating the cloze
 
          debug: bool, default True
