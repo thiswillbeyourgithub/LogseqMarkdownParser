@@ -81,7 +81,7 @@ class omnivore_to_anki:
 
          debug: bool, default True
             increase debug prints and instead of replacing the article
-            will instead create a new article with __ankified append
+            will instead create a new article with ___flashcards append
         """
         assert Path(graph_dir).exists(), f"Dir not found: {graph_dir}"
 
@@ -317,9 +317,9 @@ class omnivore_to_anki:
             p(f"Overwriting page {f_article.name}")
             parsed.export_to(f_article, overwrite=True)
         else:
-            p(f"Saving as {f_article}__ankified")
+            p(f"Saving as {f_article}___flashcards")
             parsed.export_to(
-                f_article.parent / (f_article.name + "__ankified"),
+                f_article.parent / (f_article.name + "___flashcards"),
                 overwrite=False)
         breakpoint()
 
