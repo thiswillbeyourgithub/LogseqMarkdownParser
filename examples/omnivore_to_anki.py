@@ -23,8 +23,6 @@ from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
 import fire
-import pdb
-import signal
 import uuid
 
 from typing import List
@@ -51,7 +49,7 @@ class omnivore_to_anki:
         n_article_to_process: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
-        debug: bool = True
+        debug: bool = False
             ):
         """
         parameters:
@@ -79,9 +77,8 @@ class omnivore_to_anki:
             if True, remove highlight '==' around highlights when creating
             the cloze
 
-         debug: bool, default True
-            increase debug prints and instead of replacing the article
-            will instead create a new article with ___flashcards append
+         debug: bool, default False
+            currently useless
         """
         assert Path(graph_dir).exists(), f"Dir not found: {graph_dir}"
 
@@ -94,12 +91,6 @@ class omnivore_to_anki:
             assert isinstance(append_tag, list), "append_tag must be a list"
         self.append_tag = append_tag
         self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
-
-        # make the script interruptible
-        if debug:
-            signal.signal(
-                signal.SIGINT,
-                (lambda signal, frame : pdb.set_trace()))
 
         # get list of files to check
         files = [f
