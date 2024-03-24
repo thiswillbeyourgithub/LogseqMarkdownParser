@@ -220,9 +220,13 @@ class omnivore_to_anki:
                                              #
                 # add id property if missing
                 if "id" not in block.properties:
-                    block_hash = self.cloze_hash(art_cont, high)
+                    block_hash = self.hash(art_cont, high)
                     block.set_property("id", block_hash)
                 buid = block.properties["id"]
+
+                # the id of the cloze block should be a hash that only
+                # depends on the highlight and article
+                df.loc[buid, "cloze_hash"] = self.hash(high, art_cont)
 
                 matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont:
@@ -266,7 +270,6 @@ class omnivore_to_anki:
 
                     # store position and cloze
                     df.loc[buid, "cloze"] = cloze
-                    df.loc[buid, "cloze_hash"] = self.cloze_hash(high, art_cont)
 
                 elif matching_art_cont.count(high) > 1:
                     # if present several times: concatenate all the cloze as once
@@ -289,7 +292,6 @@ class omnivore_to_anki:
                         cloze = self.context_to_cloze(high, context)
 
                         df.loc[buid, "cloze"] = cloze
-                        df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
 
                     # else: create one cloze for each and one card containing all those clozes
                     else:
@@ -328,7 +330,6 @@ class omnivore_to_anki:
                         cloze = "\n\n".join(clozes)
 
                         df.loc[buid, "cloze"] = cloze
-                        df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
 
@@ -465,11 +466,14 @@ class omnivore_to_anki:
 
         return context
 
-    def cloze_hash(self, cloze: str, article: str) -> str:
+    def hash(self, *args: List[str]) -> str:
+        temp = args[0]
+        for new in args[1:]:
+            temp += new
         return str(
                 uuid.uuid3(
                     uuid.NAMESPACE_URL,
-                    article + cloze)
+                    temp)
         )
 
     def parse_label(self, label: str) -> str:
