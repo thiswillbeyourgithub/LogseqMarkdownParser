@@ -26,7 +26,7 @@ def parse_file(
     assert Path(file_path).exists(), f"{file_path} not found"
 
     content = Path(file_path).read_text()
-    parsed_text = classes.MdText(
+    parsed_text = classes.LogseqPage(
             content=content,
             verbose=verbose,
             )

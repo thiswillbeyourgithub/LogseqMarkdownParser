@@ -292,7 +292,7 @@ class omnivore_to_anki:
         assert len(df) == n_highlight_blocks
 
         # insert cloze as blocks in a new page
-        newpage = LogseqMarkdownParser.classes.MdText(content="", verbose=False)
+        newpage = LogseqMarkdownParser.classes.LogseqPage(content="", verbose=False)
         newpage.set_property("omnivore-type", "flashcard_page")
         done = []
         for buid, row in df.iterrows():
@@ -303,7 +303,7 @@ class omnivore_to_anki:
             assert block.UUID == buid
 
             # turn the cloze into a block
-            cloze_block = LogseqMarkdownParser.classes.MdBlock("- " + cloze, verbose=False)
+            cloze_block = LogseqMarkdownParser.classes.LogseqBlock("- " + cloze, verbose=False)
             cloze_block.indentation_level = 0
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))

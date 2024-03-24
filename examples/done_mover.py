@@ -89,7 +89,7 @@ def main(
 
     todos.blocks = [b for b in todos.blocks if b is not None]
     assert not [b for b in dones if b is None], "dones contained None"
-    dones = LogseqMarkdownParser.classes.MdText(
+    dones = LogseqMarkdownParser.classes.LogseqPage(
             content="\n".join([str(b) for b in dones]),
             verbose=verbose)
 

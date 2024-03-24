@@ -4,12 +4,12 @@ import uuid
 import re
 
 
-class MdText:
+class LogseqPage:
     """simple class that stores the markdown blocks in the self.blocks attribute.
 
     Attributes:
         * blocks
-            list of MdBlock objects
+            list of LogseqBlock objects
         * page_properties
             can be edited like a normal dict, as opposed to the block properties
 
@@ -75,7 +75,7 @@ class MdText:
         self.blocks = []
         for index, block_str in enumerate(blocks):
             assert isinstance(block_str, str), f"block is not string: '{block_str}'"
-            block = MdBlock(
+            block = LogseqBlock(
                     content=block_str,
                     verbose=self.verbose,
                     )
@@ -189,7 +189,7 @@ class MdText:
         return "\n".join([str(b) for b in self.blocks])
 
     def __repr__(self) -> str:
-        return f"MdText({self.__str__()})"
+        return f"LogseqPage({self.__str__()})"
 
     def as_json(self) -> list[dict]:
         """returns a json format string for the whole text. Meant to be piped
@@ -197,7 +197,7 @@ class MdText:
         return [block.as_json() for block in self.blocks]
 
 
-class MdBlock:
+class LogseqBlock:
     BLOCK_PROP_REGEX = re.compile(r"(\s+\w[\w_-]*\w:: .+)")
     INDENT_REGEX = re.compile(r"^\s*")
 
@@ -251,7 +251,7 @@ class MdBlock:
         return self._blockvalues["content"]
 
     def __repr__(self) -> str:
-        return f"MdBlock({self.__str__()})"
+        return f"LogseqBlock({self.__str__()})"
 
     @property
     def content(self) -> str:
