@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "LogseqMarkdownParser"
-version = "1.3"
+version = "1.4"
 description = "parse logseq markdown text with easy access to properties, hierarchy, TODO etc"
 readme = "README.md"
 authors = [{ name = "thiswillbeyourgithub"}]
