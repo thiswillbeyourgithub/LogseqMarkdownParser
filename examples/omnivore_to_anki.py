@@ -384,7 +384,7 @@ class omnivore_to_anki:
     def context_to_cloze(self, highlight, context):
         assert highlight in context
 
-        cloze = "…" + context.replace(highlight, " {{c1 " + highlight + " }} ") + "…"
+        cloze = "…" + context.replace(highlight, " <mark> {{c1 " + highlight + " }} </mark> ") + "…"
 
         return cloze
 
