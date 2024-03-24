@@ -34,7 +34,7 @@ from joblib import Parallel, delayed, Memory
 from typing import List
 from math import inf
 
-from Levenshtein import distance as ld
+import Levenshtein as lev
 
 #import LogseqMarkdownParser
 import sys
@@ -567,7 +567,7 @@ def match_highlight_to_corpus(
     dists = Parallel(
         backend="threading",
         n_jobs=n_jobs,
-    )(delayed(ld)(ngram, query) for ngram in corpus_ngrams)
+    )(delayed(lev.distance)(ngram, query) for ngram in corpus_ngrams)
     for idx, ngram in enumerate(corpus_ngrams):
         ngram_dist = dists[idx]
         if ngram_dist < min_dist:
@@ -596,7 +596,7 @@ def match_highlight_to_corpus(
     def ld_set(ngram_set, query):
         dists = []
         for ngram in ngram_set:
-            dists.append(ld(ngram, query))
+            dists.append(lev.distance(ngram, query))
         return dists
     dist_list = Parallel(
         backend="threading",
