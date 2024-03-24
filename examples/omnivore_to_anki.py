@@ -323,7 +323,7 @@ class omnivore_to_anki:
             cloze_block.set_property("omnivore-clozeparentuuid", buid)
             cloze_block.set_property("id", df.loc[buid, "cloze_hash"])
             cloze_block.set_property("deck", self.anki_deck_target)
-            cloze_block.set_property("parent", f"(({buid}))")
+            cloze_block.set_property("parent", f"#{buid}")
 
             if self.prepend_tag:
                 if "tags" in block.properties:
