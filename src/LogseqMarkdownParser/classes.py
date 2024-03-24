@@ -5,7 +5,21 @@ import re
 
 
 class MdText:
-    "simple class that stores the markdown blocks in the self.blocks attribute"
+    """simple class that stores the markdown blocks in the self.blocks attribute.
+
+    Attributes:
+        * blocks
+            list of MdBlock objects
+        * page_properties
+            can be edited like a normal dict, as opposed to the block properties
+
+    Methods:
+        * export_to
+        * set_property
+            convenience method for harmony. Access instead directly the
+            page_property attribute
+
+    """
     PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]*\w:: .+)")
     def __init__(
             self,
