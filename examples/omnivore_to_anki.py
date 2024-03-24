@@ -266,7 +266,7 @@ class omnivore_to_anki:
 
                     # store position and cloze
                     df.loc[buid, "cloze"] = cloze
-                    df.loc[buid, "cloze_hash"] = self.cloze_hash(cloze, art_cont)
+                    df.loc[buid, "cloze_hash"] = self.cloze_hash(highlight, art_cont)
 
                 elif matching_art_cont.count(high) > 1:
                     # if present several times: concatenate all the cloze as once
