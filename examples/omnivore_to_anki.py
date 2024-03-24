@@ -355,7 +355,6 @@ class omnivore_to_anki:
             overwrite=self.overwrite_flashcard_page)
         if parsed.content != f_article.read_text():
             parsed.export_to(f_article, overwrite=True)
-        breakpoint()
 
     def parse_block_content(self, block):
         cont = block.content
