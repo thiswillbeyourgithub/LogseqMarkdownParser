@@ -324,7 +324,7 @@ class MdBlock:
                 old_val = self.properties[key]
                 assert self.content.count(f"  {key}:: {old_val}") == 1, (
                     "unable to find key/val pair: {key}/{old_val}")
-                self.content = re.sub(
+                self.content = self.content.replace(
                         f"  {key}:: {old_val}",
                         f"  {key}:: {value}",
                         )
