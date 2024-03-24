@@ -161,7 +161,7 @@ class omnivore_to_anki:
             # find the block containing the article
             if article is None:
                 if block.content.startswith("\t- ### Content"):
-                    article = blocks[ib+1]
+                    article = parsed.blocks[ib+1]
                     art_cont = self.parse_block_content(article)
                 continue
 
