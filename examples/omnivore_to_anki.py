@@ -116,16 +116,9 @@ class omnivore_to_anki:
         assert files, (
                 f"No files found in {graph_dir} with start_name {start_name}")
 
-        # sort files by date
-        def _parse_date(path):
-            cont = path.read_text()
-            s = cont.split("date-saved:: ")[1].split("]]")[0][2:]
-            date = datetime.strptime(s, "%d-%m-%Y")
-            return date
-
         files = sorted(
                 files,
-                key=lambda f: _parse_date(f),
+                key=lambda f: parse_date(f),
                 reverse=True if recent_article_fist else False,
                 )
 
@@ -394,6 +387,13 @@ class omnivore_to_anki:
         tqdm.write(text)
         return text
 
+
+def parse_date(path: Path) -> datetime:
+    "return the date property of a logseq page"
+    cont = path.read_text()
+    s = cont.split("date-saved:: ")[1].split("]]")[0][2:]
+    date = datetime.strptime(s, "%d-%m-%Y")
+    return date
 
 
 @mem.cache()
