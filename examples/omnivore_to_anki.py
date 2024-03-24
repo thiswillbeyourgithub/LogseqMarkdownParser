@@ -408,15 +408,7 @@ class omnivore_to_anki:
         cont = cont.replace("==:==", ":")
         cont = cont.replace("==.==", ".")
 
-        if not self.unhighlight_others:
-            i = 0
-            while "==" in cont:
-                if i % 2 == 0:
-                    cont = cont.replace("==", "<mark>", 1)
-                else:
-                    cont = cont.replace("==", "</mark>", 1)
-                i += 1
-        else:
+        if self.unhighlight_others:
             cont = cont.replace("==", "").strip()
         return cont
 
@@ -438,7 +430,7 @@ class omnivore_to_anki:
                 break
         before = before[::-1]
 
-        cloze = "…" + before + " <mark> {{c1 " + highlight + " }} </mark> " + after + "…"
+        cloze = "…" + before + " == {{c1 " + highlight + " }} == " + after + "…"
 
         return cloze
 
