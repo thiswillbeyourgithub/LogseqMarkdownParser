@@ -344,9 +344,9 @@ class omnivore_to_anki:
                 parsed.blocks[ib].TODO_state = "DONE"
 
         # create new file
-        self.p(f"Saving as {f_article.name}___flashcards")
+        self.p(f"Saving as {f_article.stem}___flashcards.md")
         newpage.export_to(
-            f_article.parent / (f_article.name + "___flashcards"),
+            f_article.parent / (f_article.stem + "___flashcards.md"),
             overwrite=self.overwrite_flashcard_page)
         if parsed.content != f_article.read_text():
             parsed.export_to(f_article, overwrite=True)
