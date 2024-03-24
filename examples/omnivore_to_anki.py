@@ -47,10 +47,10 @@ sys.path = saved_path
 mem = Memory(".cache", verbose=False)
 
 context_extenders = {
-    re.compile("\n\n"): 50,
-    re.compile("\n"): 50,
-    re.compile(". "): 50,
-    re.compile(" "): 50,
+    re.compile("\n\n"): 300,
+    re.compile("\n"): 300,
+    re.compile(". "): 300,
+    re.compile(" "): 300,
 }
 # backwards
 bkw_cont_ext = {re.compile(k.pattern[::-1]): v for k, v in context_extenders.items()}
