@@ -285,7 +285,7 @@ class omnivore_to_anki:
                 if matching_art_cont.count(high) == 1:
                     # if present only once: proceed
                     ind = matching_art_cont.index(high)
-                    before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind].strip()
+                    before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind]
                     after = matching_art_cont[ind:ind+self.csize]
                     context = (before + after).strip()
                     context = self.extend_context(context, matching_art_cont)
