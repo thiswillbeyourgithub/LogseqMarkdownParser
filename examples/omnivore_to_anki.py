@@ -438,6 +438,7 @@ class omnivore_to_anki:
         cont = cont.replace("==!==", "!")
         cont = cont.replace("==:==", ":")
         cont = cont.replace("==.==", ".")
+        cont = cont.replace("== ==", " ")
 
         if self.unhighlight_others:
             cont = cont.replace("==", "").strip()
