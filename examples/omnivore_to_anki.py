@@ -38,10 +38,6 @@ import LogseqMarkdownParser
 
 mem = Memory(".cache", verbose=False)
 
-def p(text: str) -> str:
-    "simple printer"
-    tqdm.write(text)
-
 
 class omnivore_to_anki:
     def __init__(
@@ -136,10 +132,10 @@ class omnivore_to_anki:
         files = [f for f in files if "- TODO " in f.read_text()]
         assert files, "No files contained TODO"
 
-        p(f"Found {len(files)} omnivore articles to create anki cards for")
+        self.p(f"Found {len(files)} omnivore articles to create anki cards for")
 
         for f_article in tqdm(files[:n_article_to_process], unit="article"):
-            p(f"Processing {f_article}")
+            self.p(f"Processing {f_article}")
             self.parse_one_article(f_article)
 
 
@@ -347,9 +343,8 @@ class omnivore_to_anki:
                 assert parsed.blocks[ib].TODO_state == "TODO", "Expected a TODO highlight block"
                 parsed.blocks[ib].TODO_state = "DONE"
 
-
         # create new file
-        p(f"Saving as {f_article.name}___flashcards")
+        self.p(f"Saving as {f_article.name}___flashcards")
         newpage.export_to(
             f_article.parent / (f_article.name + "___flashcards"),
             overwrite=self.overwrite_flashcard_page)
@@ -391,6 +386,12 @@ class omnivore_to_anki:
         label = label.replace("[", "").replace("]", "").replace("#", "").strip()
         assert label
         return label
+
+    def p(self, text: str) -> str:
+        "simple printer"
+        tqdm.write(text)
+        return text
+
 
 
 @mem.cache()
