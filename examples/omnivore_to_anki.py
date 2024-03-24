@@ -209,6 +209,12 @@ class omnivore_to_anki:
 
                 matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont:
+                    if len(art_cont) >= 100_000:
+                        self.p(
+                            f"Article contains {len(art_cont)} "
+                            "characters so it might be too hard to find "
+                            "a substring for in the current "
+                            "implemeentation. Open an issue.")
                     best_substring_match, min_distance = match_highlight_to_corpus(high, art_cont)
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
