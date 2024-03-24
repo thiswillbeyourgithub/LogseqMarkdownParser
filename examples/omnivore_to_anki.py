@@ -46,6 +46,14 @@ sys.path = saved_path
 
 mem = Memory(".cache", verbose=False)
 
+context_extenders = {
+    re.compile("\n\n"): 50,
+    re.compile("\n"): 50,
+    re.compile(". "): 50,
+    re.compile(" "): 50,
+}
+# backwards
+bkw_cont_ext = {re.compile(k.pattern[::-1]): v for k, v in context_extenders.items()}
 highlight_extenders = {
     re.compile(". "): 5,
     re.compile("."): 5,
@@ -250,6 +258,7 @@ class omnivore_to_anki:
                     remaining = max(remaining, len(high) * 2)
                     after = matching_art_cont[ind:ind+remaining]
                     context = (before + after).strip()
+                    context = self.extend_context(context, matching_art_cont)
                     assert context
                     assert high in context
                     assert len(context) / self.csize - 1 < 1.3
@@ -317,6 +326,7 @@ class omnivore_to_anki:
                         clozes = []
                         for r1, r2 in ranges:
                             context = matching_art_cont[r1 - self.csize//4:r2+self.csize//4]
+                            context = self.extend_context(context, matching_art_cont)
                             clozes.append(self.context_to_cloze(high, context))
                         cloze = "\n\n".join(clozes)
 
@@ -415,6 +425,7 @@ class omnivore_to_anki:
             if match:
                 highlight = highlight + after[:match.start()]
                 break
+
         before = before[::-1]
         for sep, tol in bkw_high_ext.items():
             match = re.search(sep, before[:tol])
@@ -423,9 +434,33 @@ class omnivore_to_anki:
                 break
         before = before[::-1]
 
-        cloze = "…" + before + " <mark> {{c1 " + highlight + " }} </mark> " + after "…"
+        cloze = "…" + before + " <mark> {{c1 " + highlight + " }} </mark> " + after + "…"
 
         return cloze
+
+    def extend_context(self, context: str, article: str) -> str:
+        o_context = context
+        assert context in article
+
+        before, after = article.split(context)
+        for sep, tol in context_extenders.items():
+            match = re.search(sep, after[:tol])
+            if match:
+                context = context + after[:match.start()]
+                break
+
+        before = before[::-1]
+        for sep, tol in bkw_cont_ext.items():
+            match = re.search(sep, before[:tol])
+            if match:
+                context = before[:match.start()][::-1] + context
+                break
+        before = before[::-1]
+
+        assert len(context) >= len(o_context)
+        assert len(context) <= len(article)
+
+        return context
 
     def cloze_hash(self, cloze: str, article: str) -> str:
         return str(
