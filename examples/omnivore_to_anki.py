@@ -47,12 +47,12 @@ sys.path = saved_path
 mem = Memory(".cache", verbose=False)
 
 context_extenders = {
-    re.compile("\s+\# "), 300,
-    re.compile("\s+\#\# "), 300,
-    re.compile("\s+\#\#\# "), 300,
-    re.compile("\s+\#\#\#\# "), 300,
-    re.compile("\s+\#\#\#\# "), 300,
-    re.compile("\n\n"): 300,
+    re.compile("\s+\# .+"), 300,
+    re.compile("\s+\#\# .+"), 300,
+    re.compile("\s+\#\#\# .+"), 300,
+    re.compile("\s+\#\#\#\# .+"), 300,
+    re.compile("\s+\#\#\#\# .+"), 300,
+    re.compile("\n\n+"): 300,
     re.compile("\n"): 300,
     re.compile(". "): 300,
     re.compile(" "): 300,
@@ -424,14 +424,14 @@ class omnivore_to_anki:
         for sep, tol in highlight_extenders.items():
             match = re.search(sep, after[:tol])
             if match:
-                highlight = highlight + after[:match.start()]
+                highlight = highlight + after[:match.end()]
                 break
 
         before = before[::-1]
         for sep, tol in bkw_high_ext.items():
             match = re.search(sep, before[:tol])
             if match:
-                highlight = before[:match.start()][::-1] + highlight
+                highlight = before[:match.end()][::-1] + highlight
                 break
         before = before[::-1]
 
@@ -447,16 +447,16 @@ class omnivore_to_anki:
         for sep, tol in context_extenders.items():
             match = re.search(sep, after[:tol])
             if match:
-                context = context + after[:match.start()]
+                context = context + after[:match.end()]
                 break
 
-        before = before[::-1]
+        before = before[::-1].rstrip()
         for sep, tol in bkw_cont_ext.items():
             match = re.search(sep, before[:tol])
             if match:
-                context = before[:match.start()][::-1] + context
+                context = before[:match.end()][::-1] + context
                 break
-        before = before[::-1]
+        before = before[::-1].lstrip()
 
         assert len(context) >= len(o_context)
         assert len(context) <= len(article)
