@@ -79,9 +79,7 @@ class MdText:
 
             self.blocks.append(block)
 
-        page_prop_reformed = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
-        reformed = page_prop_reformed + "\n".join([str(b) for b in self.blocks])
-        reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
+        reformed = self.content
         content = "\n".join([l for l in content.split("\n") if l.strip()])
         if reformed.replace(u"\xa0", u" ") != content.replace(u"\xa0", u" "):
             print("\n\nError: file content differed after parsing:")
@@ -107,6 +105,20 @@ class MdText:
                         print(f"reformed:  '{spref[i]}'")
                     print("\n------------------------\n")
             raise Exception("file content differed after parsing")
+
+    @property
+    def content(self) -> str:
+        "return the concatenated list of each block of the page"
+        page_prop_reformed = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
+        reformed = page_prop_reformed + "\n".join([str(b) for b in self.blocks])
+        reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
+        return reformed
+
+    @content.setter
+    def content(self, new: str):
+        raise Exception(
+            "Cannot edit page content directly. "
+            "You have to edit the blocks individually.")
 
     def export_to(
             self,
