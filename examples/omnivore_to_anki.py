@@ -34,7 +34,14 @@ from typing import List
 from math import inf
 
 from Levenshtein import distance as ld
+
+#import LogseqMarkdownParser
+import sys
+saved_path = sys.path
+sys.path.insert(0, "../src")
+sys.path.insert(0, "../src/LogseqMarkdownParser")
 import LogseqMarkdownParser
+sys.path = saved_path
 
 mem = Memory(".cache", verbose=False)
 
