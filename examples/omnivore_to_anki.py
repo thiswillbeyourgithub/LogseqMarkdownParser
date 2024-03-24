@@ -56,6 +56,7 @@ class omnivore_to_anki:
         prepend_tag: str = "",
         append_tag: List[str] = "",
         n_article_to_process: int = -1,
+        n_cards_to_create: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
         overwrite_flashcard_page: bool = False,
@@ -82,6 +83,9 @@ class omnivore_to_anki:
             prepended by prepen_tag
         n_article_to_process: int, default -1
             Only process that many articles. Useful to handle a backlog.
+            -1 to disable
+        n_cards_to_create: int, default -1
+            stops when it has created at least this many cards.
             -1 to disable
         recent_article_fist: bool, default True
 
@@ -135,12 +139,19 @@ class omnivore_to_anki:
 
         self.p(f"Found {len(files)} omnivore articles to create anki cards for")
 
+        n_created = 0
         for f_article in tqdm(files[:n_article_to_process], unit="article"):
             self.p(f"Processing {f_article}")
-            self.parse_one_article(f_article)
+            n_new = self.parse_one_article(f_article)
+            n_created += n_new
+            if n_cards_to_create != -1:
+                if n_created > n_cards_to_create:
+                    self.p(f"Done because of number of new cards reached threshold.")
+                    break
+        self.p(f"Number of new cards: {n_created}")
 
 
-    def parse_one_article(self, f_article: Path) -> None:
+    def parse_one_article(self, f_article: Path) -> int:
         article = None
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
@@ -358,6 +369,7 @@ class omnivore_to_anki:
             overwrite=self.overwrite_flashcard_page)
         if parsed.content != f_article.read_text():
             parsed.export_to(f_article, overwrite=True)
+        return len(df)
 
     def parse_block_content(self, block):
         cont = block.content
