@@ -20,6 +20,8 @@ omnivore_highlightcolor:: {{{color}}}
 """
 
 import re
+import tempfile
+import requests
 import json
 from textwrap import dedent
 from datetime import datetime
@@ -35,6 +37,40 @@ from typing import List
 from math import inf
 
 import Levenshtein as lev
+
+# to parse PDF
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import UnstructuredPDFLoader
+from langchain_community.document_loaders import PyPDFium2Loader
+from langchain_community.document_loaders import PyMuPDFLoader
+# from langchain_community.document_loaders import PDFMinerPDFasHTMLLoader
+from langchain_community.document_loaders import PDFMinerLoader
+from langchain_community.document_loaders import PDFPlumberLoader
+from langchain_community.document_loaders import OnlinePDFLoader
+from functools import partial
+from unstructured.cleaners.core import clean_extra_whitespace
+try:
+    import pdftotext
+except Exception as err:
+    print(f"Failed to import pdftotext: '{err}'")
+if "pdftotext" in globals():
+    class pdftotext_loader_class:
+        "simple wrapper for pdftotext to make it load by pdf_loader"
+        def __init__(self, path):
+            self.path = path
+
+        def load(self):
+            with open(self.path, "rb") as f:
+                return "\n\n".join(pdftotext.PDF(f))
+emptyline_regex = re.compile(r"^\s*$", re.MULTILINE)
+emptyline2_regex = re.compile(r"\n\n+", re.MULTILINE)
+linebreak_before_letter = re.compile(
+    r"\n([a-záéíóúü])", re.MULTILINE
+)  # match any linebreak that is followed by a lowercase letter
+
+
+
+
 
 #import LogseqMarkdownParser
 import sys
@@ -196,6 +232,8 @@ class omnivore_to_anki:
 
     def parse_one_article(self, f_article: Path) -> int:
         article = None
+        site = None
+        article_candidates = {}
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
         assert len(parsed.blocks) > 4
@@ -213,10 +251,31 @@ class omnivore_to_anki:
 
         for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
             # find the block containing the article
+            if "site" in block.properties:
+                site = block.properties["site"].strip()
+                if not site.startswith("http"):
+                    assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
+                    site = site.split("](")[1][:-1]
+                assert site.startswith("http")
             if article is None:
                 if block.content.startswith("\t- ### Content"):
                     article = parsed.blocks[ib+1]
-                    art_cont = self.parse_block_content(article)
+                    try:
+                        art_cont = self.parse_block_content(article)
+                    except Exception as err:
+                        article = None
+                        # no content means it's a PDF
+                        self.p(
+                                f"No article content for {f_article}. "
+                               "Treading as  PDF.")
+                        assert site is not None, (
+                            f"No URL for PDF found in {f_article}")
+                        # download and save the pdf
+                        pdf = download_pdf(site)
+                        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
+                            temp_file.write(pdf)
+                            temp_file.flush()
+                        article_candidates = parse_pdf(temp_file.name, site)
                 continue
 
             prop = block.properties
@@ -243,6 +302,28 @@ class omnivore_to_anki:
                     f"Highlight should begin with '> ': '{high}'")
                 high = high[2:].strip()
                 assert high, "Empty highlight?"
+
+                if article is None:
+                    assert article_candidates
+                    for k, v in article_candidates.items():
+                        if high in v:
+                            self.p(f"Best matching pdf parser: {k}")
+                            art_cont = v
+                            break
+                    # high never found in f: compute best matching substring
+                    if high not in v:
+                        best_candidate = None
+                        min_dist = inf
+                        for k, v in article_candidates.items():
+                            _, dist = match_highlight_to_corpus(
+                                    query=high,
+                                    corpus=v,
+                                    n_jobs=4)
+                            if dist < min_dist:
+                                min_dist = dist
+                                best_candidate = k
+                        assert best_candidate
+                        art_cont = article_candidates[best_candidate]
                                              #
                 # add id property if missing
                 if "id" not in block.properties:
@@ -442,6 +523,8 @@ class omnivore_to_anki:
 
         if self.unhighlight_others:
             cont = cont.replace("==", "").strip()
+        if cont == "-":
+            raise Exception("Empty block")
         return cont
 
     def context_to_cloze(self, highlight, context):
@@ -614,6 +697,91 @@ def match_highlight_to_corpus(
                 closest_match = ngram
 
     return closest_match, min_dist
+
+@mem.cache()
+def download_pdf(url):
+    "cached call to download a pdf from a url"
+    response = requests.get(url)
+    return response.content
+
+@mem.cache()
+def parse_pdf(path, url):
+    loaded_docs = {}
+    loaders = {
+        "pdftotext": None,  # optional support
+        "PDFMiner": PDFMinerLoader,
+        "PyPDFLoader": PyPDFLoader,
+        "Unstructured_elements_hires": partial(
+            UnstructuredPDFLoader,
+            mode="elements",
+            strategy="hi_res",
+            post_processors=[clean_extra_whitespace],
+            infer_table_structure=True,
+            # languages=["fr"],
+        ),
+        "Unstructured_elements_fast": partial(
+            UnstructuredPDFLoader,
+            mode="elements",
+            strategy="fast",
+            post_processors=[clean_extra_whitespace],
+            infer_table_structure=True,
+            # languages=["fr"],
+        ),
+        "Unstructured_hires": partial(
+            UnstructuredPDFLoader,
+            strategy="hi_res",
+            post_processors=[clean_extra_whitespace],
+            infer_table_structure=True,
+            # languages=["fr"],
+        ),
+        "Unstructured_fast": partial(
+            UnstructuredPDFLoader,
+            strategy="fast",
+            post_processors=[clean_extra_whitespace],
+            infer_table_structure=True,
+            # languages=["fr"],
+        ),
+        "PyPDFium2": PyPDFium2Loader,
+        "PyMuPDF": PyMuPDFLoader,
+        "PdfPlumber": PDFPlumberLoader,
+        "online": OnlinePDFLoader,
+    }
+    # pdftotext is kinda weird to install on windows so support it
+    # only if it's correctly imported
+    if "pdftotext" in globals():
+        loaders["pdftotext"] = pdftotext_loader_class
+    else:
+        del loaders["pdftotext"]
+
+    # using language detection to keep the parsing with the highest lang
+    # probability
+    for loader_name, loader_func in loaders.items():
+        try:
+            print(f"Trying to parse {path} using {loader_name}")
+
+            if loader_name == "online":
+                loader = loader_func(url)
+            else:
+                loader = loader_func(path)
+            content = loader.load()
+
+            if "Unstructured" in loader_name:
+                content = "\n".join([d.page_content.strip() for d in content])
+                # remove empty lines. frequent in pdfs
+                content = re.sub(emptyline_regex, "", content)
+                content = re.sub(emptyline2_regex, "\n", content)
+                content = re.sub(linebreak_before_letter, r"\1", content)
+
+            assert isinstance(content, str), "content is not string"
+
+            loaded_docs[loader_name] = content
+
+        except Exception as err:
+            print(f"Error when parsing '{path}' with {loader_name}: {err}")
+
+    assert loaded_docs, f"No parser successfuly parsed the file"
+    return loaded_docs
+
 
 
 if __name__ == "__main__":
