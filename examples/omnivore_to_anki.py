@@ -156,7 +156,7 @@ class omnivore_to_anki:
         n_highlight_blocks = 0
         assert len(set(b.UUID for b in blocks)) == len(blocks), (
                 "Some blocks have non unique UUID")
-        df = pd.DataFrame(index=list(set(b.UUID for b in blocks)))
+        df = pd.DataFrame(index=[])
 
         for ib, block in enumerate(tqdm(blocks, unit="block")):
             # find the block containing the article
@@ -169,13 +169,6 @@ class omnivore_to_anki:
             buid = block.UUID
 
             prop = block.properties
-            if "labels" in prop:
-                df.loc[buid, "block_labels"] = json.dumps([
-                    self.parse_label(lab)
-                    for lab in prop["labels"].split(",")
-                ])
-            else:
-                df.loc[buid, "block_labels"] = json.dumps([])
 
             # check that no anki cards were created already
             if "omnivore-type" in prop:
@@ -184,6 +177,15 @@ class omnivore_to_anki:
 
             # highlight
             if (self.only_process_TODO_highlight_blocks and block.TODO_state == "TODO") or (not self.only_process_TODO_highlight_blocks):
+
+                if "labels" in prop:
+                    df.loc[buid, "block_labels"] = json.dumps([
+                        self.parse_label(lab)
+                        for lab in prop["labels"].split(",")
+                    ])
+                else:
+                    df.loc[buid, "block_labels"] = json.dumps([])
+
                 n_highlight_blocks += 1
                 assert prop["omnivore-type"] == "highlight", (
                         f"Unexpected block properties: {prop}")
@@ -299,7 +301,8 @@ class omnivore_to_anki:
         # insert cloze as blocks in a new page
         newpage = LogseqMarkdownParser.classes.MdText(content="", verbose=False)
         done = []
-        for buid, cloze in anki_clozes.iterrows():
+        for buid, row in df.iterrows():
+            cloze = row["cloze"]
             for ib, block in enumerate(parsed.blocks):
                 if block.UUID == buid:
                     break
