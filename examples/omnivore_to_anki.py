@@ -57,14 +57,32 @@ context_extenders = {
     re.compile(". "): 300,
     re.compile(" "): 300,
 }
-# backwards
-bkw_cont_ext = {re.compile(k.pattern[::-1]): v for k, v in context_extenders.items()}
 highlight_extenders = {
     re.compile(". "): 5,
     re.compile("."): 5,
     re.compile(" "): 5,
 }
-bkw_high_ext = {re.compile(k.pattern[::-1]): v for k, v in highlight_extenders.items()}
+# backwards
+bkw_cont_ext = {}
+for k, v in context_extenders.items():
+    k = k.pattern[::-1]
+    k = list(k)
+    for ik, kk in enumerate(k):
+        if kk in ["\\", "+", "*"]:
+            k[ik] = k[ik-1]
+            k[ik-1] = kk
+    k = "".join(k)
+    bkw_cont_ext[re.compile(k)] = v
+bkw_high_ext = {}
+for k, v in highlight_extenders.items():
+    k = k.pattern[::-1]
+    k = list(k)
+    for ik, kk in enumerate(k):
+        if kk in ["\\", "+", "*"]:
+            k[ik] = k[ik-1]
+            k[ik-1] = kk
+    k = "".join(k)
+    bkw_high_ext[re.compile(k)] = v
 
 
 
