@@ -401,6 +401,12 @@ class omnivore_to_anki:
             cont = cont.replace(block.TODO_state, "")
         cont = cont.replace("- ", "", 1)
         cont = cont.strip()
+
+        # highlight fix
+        cont = cont.replace("==!==", "!")
+        cont = cont.replace("==:==", ":")
+        cont = cont.replace("==.==", ".")
+
         if not self.unhighlight_others:
             i = 0
             while "==" in cont:
