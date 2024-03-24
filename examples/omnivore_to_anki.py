@@ -315,7 +315,8 @@ class omnivore_to_anki:
             assert block.UUID == buid
 
             # turn the cloze into a block
-            cloze_block = LogseqMarkdownParser.classes.LogseqBlock("- " + cloze, verbose=False)
+            cont = f"- {cloze.strip()}"
+            cloze_block = LogseqMarkdownParser.classes.LogseqBlock(cont, verbose=False)
             cloze_block.indentation_level = 0
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
