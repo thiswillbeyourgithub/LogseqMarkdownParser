@@ -142,7 +142,6 @@ class LogseqPage:
                 if block.UUID != latest_UUID:
                     temp += "\n"
         temp = textwrap.dedent(temp)
-        temp = temp.replace("    ", "\t")
         temp = temp.strip()
         return temp
 
@@ -180,6 +179,7 @@ class LogseqPage:
         cont = self.content
 
         if cont:
+            cont = cont.replace("    ", "\t")
             with open(file_path, "w") as f:
                 f.write(cont)
         else:
