@@ -20,6 +20,7 @@ omnivore_highlightcolor:: {{{color}}}
 """
 
 import pandas as pd
+import json
 from textwrap import dedent
 from datetime import datetime
 from tqdm import tqdm
