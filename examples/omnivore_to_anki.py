@@ -145,13 +145,12 @@ class omnivore_to_anki:
         else:
             page_labels = []
 
-        blocks = parsed.blocks.copy()
         n_highlight_blocks = 0
-        assert len(set(b.UUID for b in blocks)) == len(blocks), (
+        assert len(set(b.UUID for b in parsed.blocks)) == len(parsed.blocks), (
                 "Some blocks have non unique UUID")
         df = pd.DataFrame(index=[])
 
-        for ib, block in enumerate(tqdm(blocks, unit="block")):
+        for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
             # find the block containing the article
             if article is None:
                 if block.content.startswith("\t- ### Content"):
