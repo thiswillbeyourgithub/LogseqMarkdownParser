@@ -315,13 +315,14 @@ class MdBlock:
     # METHODS:
     def set_property(
             self,
-            key,
+            key: str,
             value=None):
         """
         set a property to the block.
         if the value is None, the property will be deleted
         Note that this will also directly alter the block content.
         """
+        assert isinstance(key, str), "key must be a string"
         if value is not None:  # add or edit prop
             try:
                 value = str(value)
