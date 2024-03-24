@@ -120,6 +120,18 @@ class MdText:
             "Cannot edit page content directly. "
             "You have to edit the blocks individually.")
 
+    def set_property(self, key, value=None):
+        """convenience function to harmonize behavior of page and blocks.
+        You can edit self.page_properties as a regular dict instead.
+        Set None as the value to delete a key.
+        """
+        if value is not None:
+            self.page_properties[key] = value
+        else:
+            assert key in self.page_properties, (
+                f"No {key} found in page_properties key so can't delete it")
+            del self.page_properties[key]
+
     def export_to(
             self,
             file_path: str,
