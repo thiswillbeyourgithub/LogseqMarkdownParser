@@ -28,12 +28,15 @@ from pathlib import Path
 import fire
 import uuid
 
+from joblib import Parallel, delayed, Memory
+
 from typing import List
 from math import inf
 
 from Levenshtein import distance as ld
 import LogseqMarkdownParser
 
+mem = Memory(".cache", verbose=False)
 
 def p(text: str) -> str:
     "simple printer"
@@ -391,12 +394,14 @@ class omnivore_to_anki:
         return label
 
 
+@mem.cache()
 def match_highlight_to_corpus(
         query: str,
         corpus: str,
         case_sensitive: bool = True,
         step_factor: int = 128,
         favour_smallest: bool = False,
+        n_jobs: int = -1,
     ) -> List:
     '''
     Source: https://stackoverflow.com/questions/36013295/find-best-substring-match
@@ -416,6 +421,8 @@ def match_highlight_to_corpus(
         Once the region of the best match is found, the search proceeds from larger to smaller ngrams or vice versa.
         If two or more ngrams have the same minimum distance then this flag controls whether the largest or smallest
         is returned.
+    - n_jobs: int
+        number of jobs to use for multithreading. 1 to disable
 
     Returns  
     [Best matching substring of corpus, Levenshtein distance of closest match]
@@ -436,8 +443,12 @@ def match_highlight_to_corpus(
     # Step is half the length of the query.
     # This is found to be good enough to find the general region of the best match in the corpus
     corpus_ngrams = [corpus[i:i+query_len] for i in range(0, corpus_len-query_len+1, query_len_by_2)]
+    dists = Parallel(
+        backend="threading",
+        n_jobs=n_jobs,
+    )(delayed(ld)(ngram, query) for ngram in corpus_ngrams)
     for idx, ngram in enumerate(corpus_ngrams):
-        ngram_dist = ld(ngram, query)
+        ngram_dist = dists[idx]
         if ngram_dist < min_dist:
             min_dist = ngram_dist
             closest_match_idx = idx
@@ -461,9 +472,18 @@ def match_highlight_to_corpus(
     ]
 
     # Thorough search of the region in which the best match exists
-    for ngram_set in narrowed_corpus_ngrams:
+    def ld_set(ngram_set, query):
+        dists = []
         for ngram in ngram_set:
-            ngram_dist = ld(ngram, query)
+            dists.append(ld(ngram, query))
+        return dists
+    dist_list = Parallel(
+        backend="threading",
+        n_jobs=n_jobs,
+    )(delayed(ld_set)(ngram_set, query) for ngram_set in narrowed_corpus_ngrams)
+    for ing, ngram_set in enumerate(narrowed_corpus_ngrams):
+        for iing, ngram in enumerate(ngram_set):
+            ngram_dist = dist_list[ing][iing]
             if ngram_dist < min_dist:
                 min_dist = ngram_dist
                 closest_match = ngram
