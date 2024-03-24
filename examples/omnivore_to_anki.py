@@ -110,6 +110,7 @@ class omnivore_to_anki:
                  for f in (Path(graph_dir) / "pages").iterdir()
                  if f.name.startswith(start_name)
                  and f.name.endswith(".md")
+                 and not f.name.endswith("___flashcard.md")
                  ]
 
         assert files, (
