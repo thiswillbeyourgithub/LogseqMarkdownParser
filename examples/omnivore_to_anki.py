@@ -47,13 +47,13 @@ sys.path = saved_path
 mem = Memory(".cache", verbose=False)
 
 context_extenders = {
-    re.compile("\s+\# .+"), 300,
-    re.compile("\s+\#\# .+"), 300,
-    re.compile("\s+\#\#\# .+"), 300,
-    re.compile("\s+\#\#\#\# .+"), 300,
-    re.compile("\s+\#\#\#\# .+"), 300,
-    re.compile("\n\n+"): 300,
-    re.compile("\n"): 300,
+    re.compile(r"\s+\# .+"): 300,
+    re.compile(r"\s+\#\# .+"): 300,
+    re.compile(r"\s+\#\#\# .+"): 300,
+    re.compile(r"\s+\#\#\#\# .+"): 300,
+    re.compile(r"\s+\#\#\#\# .+"): 300,
+    re.compile(r"\n\n+"): 300,
+    re.compile(r"\n"): 300,
     re.compile(". "): 300,
     re.compile(" "): 300,
 }
