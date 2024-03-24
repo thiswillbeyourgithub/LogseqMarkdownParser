@@ -309,7 +309,7 @@ class omnivore_to_anki:
 
             # turn the cloze into a block
             cloze_block = LogseqMarkdownParser.classes.MdBlock("- " + cloze, verbose=False)
-            cloze_block.indentation_level = block.indentation_level + 4
+            cloze_block.indentation_level = 0
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
             cloze_block.set_property("omnivore-clozeparentuuid", buid)
