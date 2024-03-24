@@ -147,10 +147,13 @@ class omnivore_to_anki:
         self.unhighlight_others = unhighlight_others
 
         self.anki_deck_target = anki_deck_target.replace("::", "/")
-        if append_tag:
-            assert isinstance(append_tag, list), "append_tag must be a list"
+        if not isinstance(append_tag, list):
+            append_tag = [append_tag]
         self.append_tag = append_tag
-        self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
+        if prepend_tag:
+            self.prepend_tag = "::".join(prepend_tag.split("::")) + "::"
+        else:
+            self.prepend_tag = ""
         assert isinstance(overwrite_flashcard_page, bool), "overwrite_flashcard_page must be a bool"
         self.overwrite_flashcard_page = overwrite_flashcard_page
         assert isinstance(only_process_TODO_highlight_blocks, bool), "only_process_TODO_highlight_blocks must be a bool"
