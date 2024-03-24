@@ -213,7 +213,7 @@ class LogseqBlock:
                               None otherwise.
             UUID: a random UUID. It is not the same as the one used within
                   Logseq but can be used to keep track of parents.
-                  If a UUID is already present in the block properties,
+                  If an 'id' property is already present in the block,
                   it will be used instead, this is the case if the UUID was
                   set by Logseq.
             properties: a dict with the block properties
@@ -229,7 +229,7 @@ class LogseqBlock:
               the indentation_level.
             * the other attributes can not (yet?) be altered
             * if the UUID attribute is changed, it will be inscribed in
-              the block as a property, just like Logseq does. By default the
+              the block as an id property, just like Logseq does. By default the
               UUID is random() and not inscribed in the content. Just like
               in Logseq.
             * verbose argument is currently unused
@@ -240,9 +240,11 @@ class LogseqBlock:
         content = content.replace(u'\xa0', u' ')  # replace by regular space
         self._blockvalues = {
                 'content': content,
-                "UUID": str(uuid.uuid4()),  # if accessing self.UUID the UUID
-                # will always updates if a id:: property was set in the content
             }
+        if "id" in self.properties:
+            self._blockvalues["UUID"] = self.properties["id"]
+        else:
+            self._blockvalues["UUID"] = str(uuid.uuid4())
         self._changed = False  # set to True if any value was manually changed
 
     def __str__(self) -> str:
