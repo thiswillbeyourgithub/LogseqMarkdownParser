@@ -254,9 +254,7 @@ class omnivore_to_anki:
                     # if present only once: proceed
                     ind = matching_art_cont.index(high)
                     before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind].strip()
-                    remaining = max(self.csize * 3 // 4, self.csize - len(before)) - len(high)
-                    remaining = max(remaining, len(high) * 2)
-                    after = matching_art_cont[ind:ind+remaining]
+                    after = matching_art_cont[ind:ind+self.csize]
                     context = (before + after).strip()
                     context = self.extend_context(context, matching_art_cont)
                     assert context
@@ -299,8 +297,7 @@ class omnivore_to_anki:
                         ranges = []
                         for p in positions:
                             ranges.append([max(0, p-self.csize//2)])
-                            remaining = max(self.csize//2, self.csize-ranges[-1][-1]) + len(high)
-                            ranges[-1].append(p+remaining)
+                            ranges[-1].append(p+self.csize)
 
                         # fuse ranges that are close together
                         while True:
