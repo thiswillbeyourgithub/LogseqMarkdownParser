@@ -20,7 +20,7 @@ omnivore_highlightcolor:: {{{color}}}
 """
 
 import pandas as pd
-from texrwrap import dedent
+from textwrap import dedent
 from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
@@ -46,8 +46,8 @@ class omnivore_to_anki:
         start_name: str,
         anki_deck_target: str,
         context_size: int = 2000,
-        prepend_tag: str = None,
-        append_tag: List[str] = None,
+        prepend_tag: str = "",
+        append_tag: List[str] = "",
         n_article_to_process: int = -1,
         recent_article_fist: bool = True,
         unhighlight_others: bool = False,
@@ -67,10 +67,10 @@ class omnivore_to_anki:
             name of the anki deck to send the cards to
         context_size
             number of characters to take around each highlight
-        prepend_tag: str, default None
+        prepend_tag: str, default ""
             if a string, will be used to specify a parent tag to
             any tag specified in the card
-        append_tag: list, default None
+        append_tag: list, default ""
             list of tags to add to each new cloze. This will not be
             prepended by prepen_tag
         n_article_to_process: int, default -1
@@ -145,7 +145,7 @@ class omnivore_to_anki:
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
         assert len(parsed.blocks) > 4
 
-        page_prop = parsed.properties
+        page_prop = parsed.page_properties
         if "labels" in page_prop:
             page_labels = [self.parse_label(lab) for lab in page_prop["labels"].split(",")]
         else:
@@ -169,12 +169,12 @@ class omnivore_to_anki:
 
             prop = block.properties
             if "labels" in prop:
-                df.loc[buid, "block_labels"] = [
+                df.loc[buid, "block_labels"] = json.dumps([
                     self.parse_label(lab)
                     for lab in prop["labels"].split(",")
-                ]
+                ])
             else:
-                df.loc[buid, "block_labels"] = []
+                df.loc[buid, "block_labels"] = json.dumps([])
 
             # check that no anki cards were created already
             if "omnivore-type" in prop:
@@ -321,7 +321,7 @@ class omnivore_to_anki:
                 else:
                     tags = []
                 tags.extend([self.prepend_tag + pl for pl in page_labels])
-                tags.extend([self.prepend_tag + pl for pl in df.loc[buid, "block_labels"]])
+                tags.extend([self.prepend_tag + pl for pl in json.loads(df.loc[buid, "block_labels"])])
                 if tags:
                     cloze_block.set_property("tags", ",".join(tags))
 
@@ -337,7 +337,7 @@ class omnivore_to_anki:
             newpage.blocks.append(cloze_block)
 
             if self.only_process_TODO_highlight_blocks:
-                assert parsed.blocks[ib].TODO_state = "TODO", "Expected a TODO highlight block"
+                assert parsed.blocks[ib].TODO_state == "TODO", "Expected a TODO highlight block"
                 parsed.blocks[ib].TODO_state = "DONE"
 
 
