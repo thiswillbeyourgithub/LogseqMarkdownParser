@@ -239,9 +239,8 @@ class omnivore_to_anki:
 
                 # TODO check position of the highlight but for now it's
                 # always stuck at 0
-                if str(prop["omnivore_highlightposition"]) != "0":
+                # if str(prop["omnivore_highlightposition"]) != "0":
                     # breakpoint()
-                    pass
 
                 if matching_art_cont.count(high) == 1:
                     # if present only once: proceed
