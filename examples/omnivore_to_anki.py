@@ -262,7 +262,10 @@ class omnivore_to_anki:
                             "characters so it might be too hard to find "
                             "a substring for in the current "
                             "implemeentation. Open an issue.")
-                    best_substring_match, min_distance = match_highlight_to_corpus(high, art_cont)
+                    best_substring_match, min_distance = match_highlight_to_corpus(
+                        query=high,
+                        corpus=art_cont,
+                        n_jobs=4)
                     ratio = lev.ratio(high, best_substring_match)
                     assert ratio > 0.95, f"Too low lev ratio after substring matching: {ratio:4f}"
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
