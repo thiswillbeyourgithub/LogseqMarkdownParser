@@ -356,18 +356,22 @@ class omnivore_to_anki:
             cont = cont.replace(block.TODO_state, "")
         cont = cont.replace("- ", "", 1)
         cont = cont.strip()
-        if self.unhighlight_others:
+        if not self.unhighlight_others:
+            i = 0
+            while "==" in cont:
+                if i % 2 == 0:
+                    cont = cont.replace("==", "<mark>", 1)
+                else:
+                    cont = cont.replace("==", "</mark>", 1)
+                i += 1
+        else:
             cont = cont.replace("==", "").strip()
         return cont
 
     def context_to_cloze(self, highlight, context):
         assert highlight in context
 
-        if self.unhighlight_others:
-            context = context.replace("==", "")
-            cloze = "..." + context.replace(highlight, " <mark> {{c1 " + highlight + " }} </mark> ") + "..."
-        else:
-            cloze = "..." + context.replace(highlight, " {{c1 " + highlight + " }} ") + "..."
+        cloze = "…" + context.replace(highlight, " {{c1 " + highlight + " }} ") + "…"
 
         return cloze
 
