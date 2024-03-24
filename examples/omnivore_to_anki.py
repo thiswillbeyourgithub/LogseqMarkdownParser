@@ -19,7 +19,7 @@ omnivore_highlightcolor:: {{{color}}}
 '''
 """
 
-import pandas as pd
+import re
 import json
 from textwrap import dedent
 from datetime import datetime
@@ -28,6 +28,7 @@ from pathlib import Path
 import fire
 import uuid
 
+import pandas as pd
 from joblib import Parallel, delayed, Memory
 
 from typing import List
@@ -44,6 +45,14 @@ import LogseqMarkdownParser
 sys.path = saved_path
 
 mem = Memory(".cache", verbose=False)
+
+highlight_extenders = {
+    re.compile(". "): 5,
+    re.compile("."): 5,
+    re.compile("\W"): 5,
+}
+bkw_high_ext = {re.compile(k.pattern[::-1]): v for k, v in highlight_extenders.items()}
+
 
 
 class omnivore_to_anki:
@@ -401,7 +410,21 @@ class omnivore_to_anki:
     def context_to_cloze(self, highlight, context):
         assert highlight in context
 
-        cloze = "…" + context.replace(highlight, " <mark> {{c1 " + highlight + " }} </mark> ") + "…"
+        before, after = context.split(highlight)
+        for sep, tol in highlight_extenders.items():
+            match = re.search(sep, after[:tol])
+            if match:
+                highlight = highlight + after[:match.start()]
+                break
+        before = before[::-1]
+        for sep, tol in bkw_high_ext.items():
+            match = re.search(sep, before[:tol])
+            if match:
+                highlight = before[:match.start()][::-1] + highlight
+                break
+        before = before[::-1]
+
+        cloze = "…" + before + " <mark> {{c1 " + highlight + " }} </mark> " + after "…"
 
         return cloze
 
