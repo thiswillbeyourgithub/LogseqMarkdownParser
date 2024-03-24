@@ -8,6 +8,7 @@ a simple python script to load a markdown file and easily access the properties 
 * **Does it take into account the logbook (i.e. what's added to the block when clicking on 'DOING')?** I didn't think about that initially. I think it should be parsed as normal block content and not as a property.
 
 ## Features
+* Implements classes `LogseqPage` and `LogseqBlock`
 * access block properties as a dictionary
 * easily save to a path
 * parse as json: `LogseqMarkdownParser some_file.md --as_json |jq`
