@@ -257,7 +257,9 @@ class LogseqBlock:
 
     @property
     def content(self) -> str:
-        return self._blockvalues["content"]
+        "content of the block. This includes the block properties."
+        cont = self._blockvalues["content"]
+        return cont
 
     @content.setter
     def content(self, new: str):
@@ -322,7 +324,7 @@ class LogseqBlock:
 
     @properties.setter
     def property_failedsetter(self, *args, **kwargs):
-        raise Exception("To modify the properties you must use self.set_proerty(key, value)")
+        raise Exception("To modify the properties you must use self.set_property(key, value)")
 
     def _get_properties(self) -> dict:
         prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
@@ -338,6 +340,15 @@ class LogseqBlock:
             except ValueError as err:
                 # probably failed because it was not a property but a long line that contained ::
                 raise Exception(f"Failed to parse property: {found}")
+
+        cont = self.content
+        for k, v in properties.items():
+            assert f"{k}:: " in cont, f"Missing key '{k}' in content"
+            assert f"{k}:: {v}" in cont, f"Missing key/value {key}/{value} in content"
+
+        n_id = len(re.findall(r"\s+id:: [\w-]+", cont))
+        assert n_id in [0, 1], f"Found {n_id} mention of id:: property"
+
         return properties
 
     # METHODS:
