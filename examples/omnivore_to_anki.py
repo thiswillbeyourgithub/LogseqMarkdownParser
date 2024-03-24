@@ -49,7 +49,7 @@ mem = Memory(".cache", verbose=False)
 highlight_extenders = {
     re.compile(". "): 5,
     re.compile("."): 5,
-    re.compile("\W"): 5,
+    re.compile(" "): 5,
 }
 bkw_high_ext = {re.compile(k.pattern[::-1]): v for k, v in highlight_extenders.items()}
 
