@@ -123,10 +123,28 @@ class MdText:
     @property
     def content(self) -> str:
         "return the concatenated list of each block of the page"
-        page_prop_reformed = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
-        reformed = page_prop_reformed + "\n".join([str(b) for b in self.blocks])
-        reformed = "\n".join([l for l in reformed.split("\n") if l.strip()])
-        return reformed
+        temp = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
+        if self.blocks:
+            latest_UUID = self.blocks[-1].UUID
+
+            for block in self.blocks:
+                assert str(block).lstrip().startswith("-")
+                bil = block.indentation_level
+                if not bil % 4 == 0:
+                    newbil = (1 + bil // 4) * 4
+                    if self.verbose:
+                        print(
+                            "block has an indentation level not "
+                            f"divisible by 4: '{bil % 4}' in block {block}. "
+                            f"setting indentation to {newbil}")
+                    block.indentation_level = newbil
+                temp += str(block)
+                if block.UUID != latest_UUID:
+                    temp += "\n"
+        temp = textwrap.dedent(temp)
+        temp = temp.replace("    ", "\t")
+        temp = temp.strip()
+        return temp
 
     @content.setter
     def content(self, new: str):
@@ -159,29 +177,11 @@ class MdText:
                 raise Exception(
                     "file_path already exists, use the overwrite argument")
 
-        temp = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
-        if self.blocks:
-            latest_UUID = self.blocks[-1].UUID
+        cont = self.content
 
-            for block in self.blocks:
-                assert str(block).lstrip().startswith("-")
-                bil = block.indentation_level
-                if not bil % 4 == 0:
-                    newbil = (1 + bil // 4) * 4
-                    print("block has an indentation level not "
-                          f"divisible by 4: '{bil % 4}' in block {block}. setting indentation to {newbil}")
-                    block.indentation_level = newbil
-                temp += str(block)
-                if block.UUID != latest_UUID:
-                    temp += "\n"
-        else:
-            print("No blocks found")
-            #temp += "\n"
-
-        if temp.strip():
-            temp = temp.replace("    ", "\t")
+        if cont:
             with open(file_path, "w") as f:
-                f.write(temp)
+                f.write(cont)
         else:
             print("No blocks nor page property found, so we won't even create an output file.")
 
