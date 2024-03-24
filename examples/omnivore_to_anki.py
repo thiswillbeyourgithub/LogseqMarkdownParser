@@ -165,8 +165,6 @@ class omnivore_to_anki:
                     art_cont = self.parse_block_content(article)
                 continue
 
-            buid = block.UUID
-
             prop = block.properties
 
             # check that no anki cards were created already
@@ -176,14 +174,6 @@ class omnivore_to_anki:
 
             # highlight
             if (self.only_process_TODO_highlight_blocks and block.TODO_state == "TODO") or (not self.only_process_TODO_highlight_blocks):
-
-                if "labels" in prop:
-                    df.loc[buid, "block_labels"] = json.dumps([
-                        self.parse_label(lab)
-                        for lab in prop["labels"].split(",")
-                    ])
-                else:
-                    df.loc[buid, "block_labels"] = json.dumps([])
 
                 n_highlight_blocks += 1
                 assert prop["omnivore-type"] == "highlight", (
@@ -199,12 +189,27 @@ class omnivore_to_anki:
                     f"Highlight should begin with '> ': '{high}'")
                 high = high[2:].strip()
                 assert high, "Empty highlight?"
+                                             #
+                # add id property if missing
+                if "id" not in block.properties:
+                    block_hash = self.cloze_hash(art_cont, high)
+                    block.set_property("id", block_hash)
+                buid = block.properties["id"]
 
                 matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont:
                     best_substring_match, min_distance = match_highlight_to_corpus(high, art_cont)
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
+
+                # get block labels for use as tags
+                if "labels" in prop:
+                    df.loc[buid, "block_labels"] = json.dumps([
+                        self.parse_label(lab)
+                        for lab in prop["labels"].split(",")
+                    ])
+                else:
+                    df.loc[buid, "block_labels"] = json.dumps([])
 
                 # TODO check position of the highlight but for now it's
                 # always stuck at 0
