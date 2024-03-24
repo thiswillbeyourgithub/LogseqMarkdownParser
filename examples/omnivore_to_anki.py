@@ -515,7 +515,7 @@ def parse_date(path: Path) -> datetime:
     return date
 
 
-@mem.cache()
+@mem.cache(ignore=["n_jobs"])
 def match_highlight_to_corpus(
         query: str,
         corpus: str,
