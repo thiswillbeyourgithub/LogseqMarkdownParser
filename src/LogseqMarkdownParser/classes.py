@@ -39,7 +39,7 @@ class LogseqPage:
         for i, line in enumerate(lines):
             if not line.strip():
                 lines[i] = None
-            elif not re.match(r"[ \t]*- *", line):  # it's a property or content
+            elif not re.search(r"[ \t]*- *", line):  # it's a property or content
                 if not first_block_reached:  # page property
                     pageprop += lines[i] + "\n"
                     lines[i] = None
@@ -400,7 +400,7 @@ class LogseqBlock:
                     f"invalid number of key {key} in {self.content}")
             temp = []
             for line in self.content.split("\n"):
-                if not re.match(rf"[ \t]+{key}:: ", line):
+                if not re.search(rf"[ \t]+{key}:: ", line):
                     temp.append(line)
             new_content = "\n".join(temp)
             assert new_content.count(f"{key}::") == 0, (
@@ -424,7 +424,7 @@ class LogseqBlock:
     def _get_TODO_state(self) -> str:
         TODO_state = None
         for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
-            if re.match(f"- {keyword} .*", self.content.lstrip()):
+            if re.search(f"- {keyword} .*", self.content.lstrip()):
                 assert not TODO_state, (
                     "block content fits multiple TODO states: "
                     f"'{self.content}'")
