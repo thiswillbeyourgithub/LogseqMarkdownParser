@@ -401,10 +401,10 @@ class omnivore_to_anki:
                         message = (
                             "Low lev ratio after substring matching: \n"
                                 f"Ratio: {ratio:4f}\nHighlight: '{high}'"
-                                "\nMatch: {best_substring_match}\n\n"
+                                f"\nMatch: {best_substring_match}\n\n"
                                 "\n"
                                 "Is this okay?\n"
-                                "Y(es) / Q(uit)"
+                                "Y(es) / Q(uit)\n"
                         )
                         ans = ""
                         while ans.lower() not in ["y", "yes", "n", "no", "q", "quit"]:
