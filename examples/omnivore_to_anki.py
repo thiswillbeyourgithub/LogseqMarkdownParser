@@ -598,22 +598,26 @@ class omnivore_to_anki:
     def context_to_cloze(self, highlight, context):
         assert highlight in context
 
-        before, after = context.split(highlight)
-        for sep, tol in highlight_extenders.items():
-            match = re.search(sep, after[:tol])
-            if match:
-                highlight = highlight + after[:match.end()]
-                break
+        if context.count(highlight) == 1:
+            before, after = context.split(highlight)
+            for sep, tol in highlight_extenders.items():
+                match = re.search(sep, after[:tol])
+                if match:
+                    highlight = highlight + after[:match.end()]
+                    break
 
-        before = before[::-1]
-        for sep, tol in bkw_high_ext.items():
-            match = re.search(sep, before[:tol])
-            if match:
-                highlight = before[:match.end()][::-1] + highlight
-                break
-        before = before[::-1]
+            before = before[::-1]
+            for sep, tol in bkw_high_ext.items():
+                match = re.search(sep, before[:tol])
+                if match:
+                    highlight = before[:match.end()][::-1] + highlight
+                    break
+            before = before[::-1]
 
-        cloze = "…" + before + " == {{c1 " + highlight + " }} == " + after + "…"
+            cloze = "…" + before + " == {{c1 " + highlight + " }} == " + after + "…"
+        else:
+            cloze = "…" + context.replace(highlight,  " == {{c1 " + highlight + " }} == ") + "…"
+
 
         return cloze
 
