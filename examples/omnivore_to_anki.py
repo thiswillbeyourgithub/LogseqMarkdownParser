@@ -19,6 +19,7 @@ omnivore_highlightcolor:: {{{color}}}
 '''
 """
 
+import magic
 import re
 import tempfile
 import requests
@@ -286,6 +287,11 @@ class omnivore_to_anki:
                         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
                             temp_file.write(pdf)
                             temp_file.flush()
+                        filetype = magic.from_file(temp_file.name)
+                        if "pdf" not in filetype.lower():
+                            self.p(
+                                "Might not be a PDF: filetype detected: "
+                                    f"{filetype}\nPath: {temp_file.name}")
                         article_candidates = parse_pdf(temp_file.name, site)
                 continue
 
