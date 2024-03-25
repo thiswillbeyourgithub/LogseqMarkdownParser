@@ -586,6 +586,8 @@ class omnivore_to_anki:
         cont = cont.replace("==.==", ".")
         cont = cont.replace("== ==", " ")
 
+        cont = cont.expandtabs(4)
+
         # Replace the markdown link with just the name part
         cont = re.sub(md_link_regex, r'\1', cont)
 
