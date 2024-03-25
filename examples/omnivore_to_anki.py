@@ -315,8 +315,8 @@ class omnivore_to_anki:
                         except Exception as err:
                             self.p(
                                 f"Failed to parse pdf:\n"
-                                "URL: {URL}\n"
-                                "Reason: {err}"
+                                f"URL: {site}\n"
+                                f"Reason: {err}"
                                 )
                             if self.create_cards_if_no_content:
                                 self.p(f"Continuing with empty article.")
