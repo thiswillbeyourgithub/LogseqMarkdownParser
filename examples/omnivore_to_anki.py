@@ -367,7 +367,7 @@ class omnivore_to_anki:
                             _, dist = match_highlight_to_corpus(
                                     query=high,
                                     corpus=v,
-                                    n_jobs=4)
+                                    n_jobs=1)
                             if dist < min_dist:
                                 min_dist = dist
                                 best_candidate = k
@@ -395,7 +395,7 @@ class omnivore_to_anki:
                     best_substring_match, min_distance = match_highlight_to_corpus(
                         query=high,
                         corpus=art_cont,
-                        n_jobs=4)
+                        n_jobs=1)
                     ratio = lev.ratio(high, best_substring_match)
                     if ratio <= 0.90:
                         message = (
