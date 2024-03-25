@@ -32,14 +32,14 @@ class LogseqPage:
 
         # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
-        assert lines[0].lstrip().startswith("- ") or ":: " in lines[0] or (len(lines)==1 and not lines[0].strip()), f"First line of document must start with '\s*- ' or contain a page property or the document must be empty"
+        assert lines[0].lstrip().startswith("- ") or ":: " in lines[0] or (len(lines)==1 and not lines[0].strip()), f"First line of document must start with '[ \t]*- ' or contain a page property or the document must be empty"
         lines = [l for l in lines if l.strip()]  # remove empty lines
         pageprop = ""  # as string first
         first_block_reached = False
         for i, line in enumerate(lines):
             if not line.strip():
                 lines[i] = None
-            elif not re.match(r"\s*- *", line):  # it's a property or content
+            elif not re.match(r"[ \t]*- *", line):  # it's a property or content
                 if not first_block_reached:  # page property
                     pageprop += lines[i] + "\n"
                     lines[i] = None
@@ -61,6 +61,7 @@ class LogseqPage:
         self.page_properties = {}  # the property of the whole page have to be stored separatly
         prop = re.findall(self.PAGE_PROP_REGEX, pageprop)
         for found in prop:
+            assert found == found.lstrip(), f"Incorrect page property? {found}"
             try:
                 key, value = found.split(":: ")
                 self.page_properties[key.strip()] = value.strip()
@@ -198,8 +199,8 @@ class LogseqPage:
 
 
 class LogseqBlock:
-    BLOCK_PROP_REGEX = re.compile(r"(\s+\w[\w_-]*\w:: .+)")
-    INDENT_REGEX = re.compile(r"^\s*")
+    BLOCK_PROP_REGEX = re.compile(r"[ \t]+(\w[\w_-]*\w:: .+)")
+    INDENT_REGEX = re.compile(r"^[ \t]*")
 
     def __init__(
             self,
@@ -330,9 +331,7 @@ class LogseqBlock:
         prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
         properties = {}
         for found in prop:
-            while found.startswith("\n") or found.startswith("\t"):
-                found = found[1:]
-            assert found.startswith("  "), f"REGEX match an incorrect property: {found}"
+            assert found == found.lstrip(), f"REGEX match an incorrect property: {found}"
 
             try:
                 key, value = found.split(":: ")
@@ -346,7 +345,7 @@ class LogseqBlock:
             assert f"{k}:: " in cont, f"Missing key '{k}' in content"
             assert f"{k}:: {v}" in cont, f"Missing key/value {key}/{value} in content"
 
-        n_id = len(re.findall(r"\s+id:: [\w-]+", cont))
+        n_id = len(re.findall(r"[ \t]+id:: [\w-]+", cont))
         assert n_id in [0, 1], f"Found {n_id} mention of id:: property"
 
         return properties
@@ -401,7 +400,7 @@ class LogseqBlock:
                     f"invalid number of key {key} in {self.content}")
             temp = []
             for line in self.content.split("\n"):
-                if not re.match(rf"\s+{key}:: ", line):
+                if not re.match(rf"[ \t]+{key}:: ", line):
                     temp.append(line)
             new_content = "\n".join(temp)
             assert new_content.count(f"{key}::") == 0, (
