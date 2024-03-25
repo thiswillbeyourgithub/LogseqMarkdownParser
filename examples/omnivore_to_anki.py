@@ -258,7 +258,7 @@ class omnivore_to_anki:
 
         for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
             # find the block containing the article
-            if "author" in block.properties and not article_properties:
+            if "date-saved" in block.properties and not article_properties:
                 article_properties.update(block.properties)
             if article is None:
                 if block.content.startswith("\t- ### Content"):
