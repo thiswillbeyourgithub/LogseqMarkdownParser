@@ -271,6 +271,17 @@ class omnivore_to_anki:
             # find the block containing the article
             if "date-saved" in block.properties and not article_properties:
                 article_properties.update(block.properties)
+                site = article_properties["site"].strip()
+                if site.startswith("[") and "](" in site:
+                    article_name = site.split("](")[0][1:]
+                else:
+                    article_name = site
+                article_name = article_name.replace(" ", "_")
+                if len(article_name) > 50:
+                    article_name = article_name[:50] + "…"
+                if not site.startswith("http"):
+                    assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
+                    site = site.split("](")[1][:-1]
                 continue
             if block.content.lstrip().startswith("- ### Highlights"):
                 continue
@@ -288,17 +299,6 @@ class omnivore_to_anki:
                         self.p(
                             f"No article content for {f_article}. "
                             "Treading as  PDF.")
-                        site = article_properties["site"].strip()
-                        if site.startswith("[") and "](" in site:
-                            article_name = site.split("](")[0][1:]
-                        else:
-                            article_name = site
-                        article_name = article_name.replace(" ", "_")
-                        if len(article_name) > 50:
-                            article_name = article_name[:50] + "…"
-                        if not site.startswith("http"):
-                            assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
-                            site = site.split("](")[1][:-1]
                         assert site.startswith("http")
                         assert site is not None, (
                             f"No URL for PDF found in {f_article}")
