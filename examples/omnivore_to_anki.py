@@ -547,7 +547,15 @@ class omnivore_to_anki:
                 else:
                     tags = []
                 assert article_name, "failed to parse article name"
-                tags += [article_name]
+                tags.append(article_name)
+                cloze_block.set_property("tags", ",".join(tags))
+
+            if empty_article:
+                if "tags" in block.properties:
+                    tags = block.properties["tags"].split(",")
+                else:
+                    tags = []
+                tags.append("Empty_article")
                 cloze_block.set_property("tags", ",".join(tags))
 
             if self.prepend_tag:
