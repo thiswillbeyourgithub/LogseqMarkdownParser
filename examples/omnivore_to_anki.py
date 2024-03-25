@@ -396,7 +396,7 @@ class omnivore_to_anki:
                         corpus=art_cont,
                         n_jobs=4)
                     ratio = lev.ratio(high, best_substring_match)
-                    assert ratio > 0.92, f"Too low lev ratio after substring matching: {ratio:4f}"
+                    assert ratio > 0.90, f"Too low lev ratio after substring matching: {ratio:4f}"
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont or empty_article, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
 
