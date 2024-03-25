@@ -245,6 +245,7 @@ class omnivore_to_anki:
 
     def parse_one_article(self, f_article: Path) -> int:
         article = None
+        empty_article = False  # True if pdf parsing fails
         site = None
         article_name = None
         article_candidates = {}
@@ -269,11 +270,17 @@ class omnivore_to_anki:
             # find the block containing the article
             if "date-saved" in block.properties and not article_properties:
                 article_properties.update(block.properties)
-            if article is None:
-                if block.content.startswith("\t- ### Content"):
+                continue
+            if block.content.lstrip().startswith("- ### Highlights"):
+                continue
+            if block.content.startswith("\t- ### Content"):
+                if article is None and not empty_article:
+                    assert not empty_article
+                    assert article is None
                     article = parsed.blocks[ib+1]
                     try:
                         art_cont = self.parse_block_content(article)
+                        assert art_cont != "### Highlights"
                     except Exception as err:
                         article = None
                         # no content means it's a PDF
@@ -281,7 +288,7 @@ class omnivore_to_anki:
                             f"No article content for {f_article}. "
                             "Treading as  PDF.")
                         site = article_properties["site"].strip()
-                        if site.startswith("[") and "](" in article_name:
+                        if site.startswith("[") and "](" in site:
                             article_name = site.split("](")[0][1:]
                         else:
                             article_name = site
@@ -312,7 +319,7 @@ class omnivore_to_anki:
                                 )
                             if self.create_cards_if_no_content:
                                 self.p(f"Continuing with empty article.")
-                                article = " "
+                                empty_article = True
                             else:
                                 self.p("Ignoring this article")
                                 return 0
@@ -343,7 +350,7 @@ class omnivore_to_anki:
                 high = high[2:].strip()
                 assert high, "Empty highlight?"
 
-                if article is None:
+                if article is None and not empty_article:
                     assert article_candidates
                     for k, v in article_candidates.items():
                         if high in v:
@@ -376,7 +383,7 @@ class omnivore_to_anki:
                 df.loc[buid, "cloze_hash"] = self.hash(high, art_cont)
 
                 matching_art_cont = dedent(art_cont).strip()
-                if high not in art_cont:
+                if high not in art_cont and not empty_article:
                     if len(art_cont) >= 100_000:
                         self.p(
                             f"Article contains {len(art_cont)} "
@@ -390,7 +397,7 @@ class omnivore_to_anki:
                     ratio = lev.ratio(high, best_substring_match)
                     assert ratio > 0.95, f"Too low lev ratio after substring matching: {ratio:4f}"
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
-                assert high in matching_art_cont, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
+                assert high in matching_art_cont or empty_article, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
 
                 # get block labels for use as tags
                 if "labels" in prop:
@@ -482,10 +489,15 @@ class omnivore_to_anki:
                         cloze = "\n\n".join(clozes)
 
                         df.loc[buid, "cloze"] = cloze
+
+                elif empty_article:
+                    cloze = self.context_to_cloze(high, high)
+                    df.loc[buid, "cloze"] = cloze
+
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
 
-        assert article is not None or article_candidates, (
+        assert article is not None or article_candidates or empty_article, (
             f"Failed to find article in blocks: {parsed.blocks}")
         assert len(df) == n_highlight_blocks
 

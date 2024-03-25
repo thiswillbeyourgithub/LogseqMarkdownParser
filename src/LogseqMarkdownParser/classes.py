@@ -39,7 +39,7 @@ class LogseqPage:
         for i, line in enumerate(lines):
             if not line.strip():
                 lines[i] = None
-            elif not re.search(r"[ \t]*- *", line):  # it's a property or content
+            elif not line.lstrip().startswith("- "):  # it's a property or content
                 if not first_block_reached:  # page property
                     pageprop += lines[i] + "\n"
                     lines[i] = None
