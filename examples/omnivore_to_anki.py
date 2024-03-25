@@ -63,6 +63,7 @@ if "pdftotext" in globals():
         def load(self):
             with open(self.path, "rb") as f:
                 return "\n\n".join(pdftotext.PDF(f))
+
 emptyline_regex = re.compile(r"^\s*$", re.MULTILINE)
 emptyline2_regex = re.compile(r"\n\n+", re.MULTILINE)
 linebreak_before_letter = re.compile(
