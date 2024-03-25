@@ -463,8 +463,10 @@ class omnivore_to_anki:
 
                         # fuse ranges that are close together
                         while True:
+                            if None in ranges:
+                                ranges = [r for r in ranges if r is not None]
                             for ir, r in enumerate(ranges):
-                                if ir == len(ranges):  # special case: last range
+                                if ir >= len(ranges) - 1:  # special case: last range
                                     if r[0] < ranges[ir-1][1]:
                                         ranges[ir][0] = ranges[ir-1][0]
                                         ranges[ir-1] = None
@@ -484,7 +486,7 @@ class omnivore_to_anki:
 
                         clozes = []
                         for r1, r2 in ranges:
-                            context = matching_art_cont[r1 - self.csize//4:r2+self.csize//4]
+                            context = matching_art_cont[max(0, r1 - self.csize//4):min(r2+self.csize//4, len(matching_art_cont))]
                             context = self.extend_context(context, matching_art_cont)
                             clozes.append(self.context_to_cloze(high, context))
                         cloze = "\n\n".join(clozes)
