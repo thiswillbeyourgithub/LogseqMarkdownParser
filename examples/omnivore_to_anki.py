@@ -397,7 +397,21 @@ class omnivore_to_anki:
                         corpus=art_cont,
                         n_jobs=4)
                     ratio = lev.ratio(high, best_substring_match)
-                    assert ratio > 0.82, f"Too low lev ratio after substring matching: {ratio:4f}\n{high}\n{best_substring_match}"
+                    if ratio <= 0.90:
+                        message = (
+                            "Low lev ratio after substring matching: \n"
+                                f"Ratio: {ratio:4f}\nHighlight: '{high}'"
+                                "\nMatch: {best_substring_match}\n\n"
+                                "\n"
+                                "Is this okay?\n"
+                                "Y(es) / Q(uit)"
+                        )
+                        ans = ""
+                        while ans.lower() not in ["y", "yes", "n", "no", "q", "quit"]:
+                            ans = input(message)
+                        if ans.lower().startswith("q"):
+                            raise SystemExit("Quitting.")
+
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont or empty_article, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
 
