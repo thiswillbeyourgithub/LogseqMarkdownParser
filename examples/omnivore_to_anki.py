@@ -803,9 +803,23 @@ def parse_pdf(path, url):
                 content = re.sub(emptyline2_regex, "\n", content)
                 content = re.sub(linebreak_before_letter, r"\1", content)
 
-            assert isinstance(content, str), "content is not string"
+            temp = ""
+            if isinstance(content, list):
+                for cont in content:
+                    if isinstance(cont, str):
+                        temp += cont
+                    elif hasattr(cont, "page_content"):
+                        temp += cont.page_content
+                    else:
+                        raise ValueError(type(cont))
+            content = temp.strip()
+
+            assert isinstance(content, str), f"content is not string but {type(content)}"
+
+            assert content, "Empty content after parsing"
 
             loaded_docs[loader_name] = content
+            print("  OK")
 
         except Exception as err:
             print(f"Error when parsing '{path}' with {loader_name}: {err}")
