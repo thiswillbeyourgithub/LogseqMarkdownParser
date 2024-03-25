@@ -433,12 +433,12 @@ class omnivore_to_anki:
                     # if present only once: proceed
                     ind = matching_art_cont.index(high)
                     before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind]
-                    after = matching_art_cont[ind:ind+self.csize]
+                    after = matching_art_cont[ind:ind+max(self.csize, int(len(high)*1.5))]
                     context = (before + after).strip()
                     context = self.extend_context(context, matching_art_cont)
                     assert context
                     assert high in context
-                    assert len(context) / self.csize - 1 < 1.3
+                    assert len(context) > len(high)
 
                     # add cloze
                     cloze = self.context_to_cloze(high, context)
