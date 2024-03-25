@@ -235,6 +235,8 @@ class omnivore_to_anki:
         site = None
         article_candidates = {}
 
+        article_properties = {}
+
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
         assert len(parsed.blocks) > 4
 
@@ -251,12 +253,8 @@ class omnivore_to_anki:
 
         for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
             # find the block containing the article
-            if "site" in block.properties:
-                site = block.properties["site"].strip()
-                if not site.startswith("http"):
-                    assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
-                    site = site.split("](")[1][:-1]
-                assert site.startswith("http")
+            if "author" in block.properties and not article_properties:
+                article_properties.update(block.properties)
             if article is None:
                 if block.content.startswith("\t- ### Content"):
                     article = parsed.blocks[ib+1]
@@ -268,6 +266,14 @@ class omnivore_to_anki:
                         self.p(
                                 f"No article content for {f_article}. "
                                "Treading as  PDF.")
+                        site = article_properties["site"].strip()
+                        if not site.startswith("http"):
+                            assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
+                            site = site.split("](")[1][:-1]
+                        assert site.startswith("http")
+                        if site.startswith("https://watermark.silverchair.com"):
+                            self.p(f"Non usable pdf url: {site}")
+                            return 0
                         assert site is not None, (
                             f"No URL for PDF found in {f_article}")
                         # download and save the pdf
