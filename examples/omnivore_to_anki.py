@@ -69,6 +69,7 @@ linebreak_before_letter = re.compile(
     r"\n([a-záéíóúü])", re.MULTILINE
 )  # match any linebreak that is followed by a lowercase letter
 
+md_link_regex = r'\[([^\]]+)\]\([^)]+\)'
 
 
 
@@ -582,6 +583,9 @@ class omnivore_to_anki:
         cont = cont.replace("==:==", ":")
         cont = cont.replace("==.==", ".")
         cont = cont.replace("== ==", " ")
+
+        # Replace the markdown link with just the name part
+        cont = re.sub(md_link_regex, r'\1', cont)
 
         if self.unhighlight_others:
             cont = cont.replace("==", "").strip()
