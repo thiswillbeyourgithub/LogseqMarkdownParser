@@ -137,6 +137,7 @@ class omnivore_to_anki:
         unhighlight_others: bool = False,
         overwrite_flashcard_page: bool = False,
         only_process_TODO_highlight_blocks: bool = True,
+        article_name_as_tag: bool = True,
         debug: bool = False
             ):
         """
@@ -172,6 +173,8 @@ class omnivore_to_anki:
             wether to allow overwriting any ___flashcards for the article
             if present
         only_process_TODO_highlight_blocks: bool, default True
+        article_name_as_tag: bool, default True
+            if True the name of the article will be appended as tag
 
          debug: bool, default False
             currently useless
@@ -194,6 +197,8 @@ class omnivore_to_anki:
         self.overwrite_flashcard_page = overwrite_flashcard_page
         assert isinstance(only_process_TODO_highlight_blocks, bool), "only_process_TODO_highlight_blocks must be a bool"
         self.only_process_TODO_highlight_blocks = only_process_TODO_highlight_blocks
+        assert isinstance(article_name_as_tag, bool), "article_name_as_tag must be a bool"
+        self.article_name_as_tag = article_name_as_tag
 
         # get list of files to check
         files = [f
@@ -475,6 +480,20 @@ class omnivore_to_anki:
             cloze_block.set_property("id", df.loc[buid, "cloze_hash"])
             cloze_block.set_property("deck", self.anki_deck_target)
             cloze_block.set_property("parent", f"#{buid}")
+
+            if self.article_name_as_tag:
+                if "tags" in block.properties:
+                    tags = block.properties["tags"].split(",")
+                else:
+                    tags = []
+                article_name = article_properties["site"]
+                if article_name.startswith("[") and "](" in article_name:
+                    article_name = article_name.split("](")[0][1:]
+                article_name = article_name.replace(" ", "_")
+                if len(article_name) > 50:
+                    article_name = article_name[:50] + "…"
+                tags += [article_name]
+                cloze_block.set_property("tags", ",".join(tags))
 
             if self.prepend_tag:
                 if "tags" in block.properties:
