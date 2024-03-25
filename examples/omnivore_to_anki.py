@@ -457,7 +457,8 @@ class omnivore_to_anki:
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
 
-        assert article is not None, f"Failed to find article in blocks: {blocks}"
+        assert article is not None or article_candidates, (
+            f"Failed to find article in blocks: {parsed.blocks}")
         assert len(df) == n_highlight_blocks
 
         # insert cloze as blocks in a new page
