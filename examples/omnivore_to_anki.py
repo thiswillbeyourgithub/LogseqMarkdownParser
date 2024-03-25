@@ -287,11 +287,6 @@ class omnivore_to_anki:
                         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
                             temp_file.write(pdf)
                             temp_file.flush()
-                        filetype = magic.from_file(temp_file.name)
-                        if "pdf" not in filetype.lower():
-                            self.p(
-                                "Might not be a PDF: filetype detected: "
-                                    f"{filetype}\nPath: {temp_file.name}")
                         article_candidates = parse_pdf(temp_file.name, site)
                 continue
 
@@ -733,6 +728,11 @@ def match_highlight_to_corpus(
 def download_pdf(url):
     "cached call to download a pdf from a url"
     response = requests.get(url)
+    if str(response.status_code) != "200":
+        raise Exception(f"Unexpected status code: {response.status_code}")
+    filetype = magic.from_buffer(response.content)
+    if "pdf" not in filetype.lower():
+        raise Exception("Downloaded file is not a PDF but {filetype}")
     return response.content
 
 @mem.cache()
