@@ -139,6 +139,7 @@ class omnivore_to_anki:
         overwrite_flashcard_page: bool = False,
         only_process_TODO_highlight_blocks: bool = True,
         article_name_as_tag: bool = True,
+        create_cards_if_no_content: bool = True,
         debug: bool = False
             ):
         """
@@ -176,6 +177,10 @@ class omnivore_to_anki:
         only_process_TODO_highlight_blocks: bool, default True
         article_name_as_tag: bool, default True
             if True the name of the article will be appended as tag
+        create_cards_if_no_content: True
+            if no content is found, will try to download a PDF if a link
+            is found. If something fails during parsing and this is True
+            will proceed to create flashcards, otherwise will skip this article.
 
          debug: bool, default False
             currently useless
@@ -200,6 +205,8 @@ class omnivore_to_anki:
         self.only_process_TODO_highlight_blocks = only_process_TODO_highlight_blocks
         assert isinstance(article_name_as_tag, bool), "article_name_as_tag must be a bool"
         self.article_name_as_tag = article_name_as_tag
+        assert isinstance(create_cards_if_no_content, bool), "create_cards_if_no_content must be a bool"
+        self.create_cards_if_no_content = create_cards_if_no_content
 
         # get list of files to check
         files = [f
@@ -239,6 +246,7 @@ class omnivore_to_anki:
     def parse_one_article(self, f_article: Path) -> int:
         article = None
         site = None
+        article_name = None
         article_candidates = {}
 
         article_properties = {}
@@ -270,24 +278,44 @@ class omnivore_to_anki:
                         article = None
                         # no content means it's a PDF
                         self.p(
-                                f"No article content for {f_article}. "
-                               "Treading as  PDF.")
+                            f"No article content for {f_article}. "
+                            "Treading as  PDF.")
                         site = article_properties["site"].strip()
+                        if site.startswith("[") and "](" in article_name:
+                            article_name = site.split("](")[0][1:]
+                        else:
+                            article_name = site
+                        article_name = article_name.replace(" ", "_")
+                        if len(article_name) > 50:
+                            article_name = article_name[:50] + "…"
                         if not site.startswith("http"):
                             assert site.startswith("[") and site.endswith(")") and "](" in site, f"Unexpected site format: {site}"
                             site = site.split("](")[1][:-1]
                         assert site.startswith("http")
-                        if site.startswith("https://watermark.silverchair.com"):
-                            self.p(f"Non usable pdf url: {site}")
-                            return 0
                         assert site is not None, (
                             f"No URL for PDF found in {f_article}")
                         # download and save the pdf
-                        pdf = download_pdf(site)
-                        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
-                            temp_file.write(pdf)
-                            temp_file.flush()
-                        article_candidates = parse_pdf(temp_file.name, site)
+                        try:
+                            pdf = download_pdf(site)
+                            with tempfile.NamedTemporaryFile(
+                                prefix=article_name,
+                                suffix=".pdf",
+                                delete=False) as temp_file:
+                                temp_file.write(pdf)
+                                temp_file.flush()
+                            article_candidates = parse_pdf(temp_file.name, site)
+                        except Exception as err:
+                            self.p(
+                                f"Failed to parse pdf:\n"
+                                "URL: {URL}\n"
+                                "Reason: {err}"
+                                )
+                            if self.create_cards_if_no_content:
+                                self.p(f"Continuing with empty article.")
+                                article = " "
+                            else:
+                                self.p("Ignoring this article")
+                                return 0
                 continue
 
             prop = block.properties
@@ -488,12 +516,7 @@ class omnivore_to_anki:
                     tags = block.properties["tags"].split(",")
                 else:
                     tags = []
-                article_name = article_properties["site"]
-                if article_name.startswith("[") and "](" in article_name:
-                    article_name = article_name.split("](")[0][1:]
-                article_name = article_name.replace(" ", "_")
-                if len(article_name) > 50:
-                    article_name = article_name[:50] + "…"
+                assert article_name, "failed to parse article name"
                 tags += [article_name]
                 cloze_block.set_property("tags", ",".join(tags))
 
