@@ -419,16 +419,23 @@ class omnivore_to_anki:
                                 "Enter the id of the best match or Q(uit) or D(ebug).\n"
                         )
                         ans = ""
-                        while ans.lower() not in [
-                            "y", "yes", "n", "no", "q", "quit",
-                            "d", "debug"] or ans.isdigit():
-                            ans = input(message)
+                        while True:
+                            ans = input(message).strip()
+                            self.p(f"Ok.")
                             if ans.lower().startswith("d"):
                                 breakpoint()
-                        if ans.lower().startswith("q"):
-                            raise SystemExit("Quitting.")
-                        elif ans.isdigit():
-                            best_substring_match = matches[int(ans)-1]
+                                ans = ""
+                                continue
+                            if ans.isdigit():
+                                ans = int(ans) - 1
+                                if ans > len(matches):
+                                    ans = ""
+                                    continue
+                                else:
+                                    best_substring_match = matches[int(ans)-1]
+                                    break
+                            if ans.lower().startswith("q"):
+                                raise SystemExit("Quitting.")
 
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont or empty_article, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
