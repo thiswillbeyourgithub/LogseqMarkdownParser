@@ -483,7 +483,6 @@ class omnivore_to_anki:
 
                     # store position and cloze
                     df.loc[buid, "cloze"] = cloze
-                    print(cloze)
 
 
                 else:
