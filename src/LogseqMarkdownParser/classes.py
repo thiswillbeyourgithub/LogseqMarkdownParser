@@ -129,6 +129,8 @@ class LogseqPage:
         "return the concatenated list of each block of the page"
         temp = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
         if self.blocks:
+            if temp:
+                temp += "\n"
             latest_UUID = self.blocks[-1].UUID
 
             for block in self.blocks:
