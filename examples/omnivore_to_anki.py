@@ -256,7 +256,7 @@ class omnivore_to_anki:
         article_properties = {}
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
-        assert len(parsed.blocks) > 4
+        assert len(parsed.blocks) >= 4
 
         page_prop = parsed.page_properties
         if "labels" in page_prop:
