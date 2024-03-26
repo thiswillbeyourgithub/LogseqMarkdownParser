@@ -399,7 +399,7 @@ class omnivore_to_anki:
 
                 matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont and not empty_article:
-                    if len(art_cont) >= 100_000:
+                    if len(art_cont) >= 1_000_000:
                         self.p(
                             f"Article contains {len(art_cont)} "
                             "characters so it might be too hard to find "
