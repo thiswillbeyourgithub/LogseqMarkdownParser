@@ -24,6 +24,7 @@ class LogseqPage:
     def __init__(
             self,
             content: str,
+            check_parsing=False,
             verbose=False,
             ):
         self.verbose = verbose
@@ -94,6 +95,8 @@ class LogseqPage:
 
             self.blocks.append(block)
 
+        if not check_parsing:
+            return
         reformed = self.content
         content = "\n".join([l for l in content.split("\n") if l.strip()])
         if reformed.replace(u"\xa0", u" ") != content.replace(u"\xa0", u" "):
