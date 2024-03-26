@@ -602,6 +602,8 @@ class omnivore_to_anki:
         return cont
 
     def context_to_cloze(self, highlight, context):
+        highlight = highlight.strip()
+        context = context.strip()
         assert highlight in context
 
         if context.count(highlight) == 1:
@@ -618,9 +620,8 @@ class omnivore_to_anki:
                 if match:
                     highlight = before[:match.end()][::-1] + highlight
                     break
-            before = before[::-1]
 
-            cloze = "…" + before + " == {{c1 " + highlight + " }} == " + after + "…"
+            cloze = "…" + before.strip() + " == {{c1 " + highlight + " }} == " + after.strip() + "…"
         else:
             cloze = "…" + context.replace(highlight,  " == {{c1 " + highlight + " }} == ") + "…"
 
