@@ -264,8 +264,8 @@ class omnivore_to_anki:
             page_labels = []
 
         n_highlight_blocks = 0
-        assert len(set(b.UUID for b in parsed.blocks)) == len(parsed.blocks), (
-                "Some blocks have non unique UUID")
+        if len(set(b.UUID for b in parsed.blocks)) != len(parsed.blocks):
+                self.p("Some blocks have non unique UUID")
         df = pd.DataFrame(index=[])
 
         for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
@@ -559,7 +559,7 @@ class omnivore_to_anki:
             newpage.blocks.append(cloze_block)
 
             if self.only_process_TODO_highlight_blocks:
-                assert parsed.blocks[ib].TODO_state == "TODO", "Expected a TODO highlight block"
+                assert parsed.blocks[ib].TODO_state in ["TODO", "DONE"], "Expected a DONE/TODO highlight block"
                 parsed.blocks[ib].TODO_state = "DONE"
 
         # create new file
