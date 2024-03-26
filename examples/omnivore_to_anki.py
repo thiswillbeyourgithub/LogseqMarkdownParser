@@ -209,6 +209,7 @@ class omnivore_to_anki:
         self.article_name_as_tag = article_name_as_tag
         assert isinstance(create_cards_if_no_content, bool), "create_cards_if_no_content must be a bool"
         self.create_cards_if_no_content = create_cards_if_no_content
+        self.start_name = start_name
 
         # get list of files to check
         files = [f
@@ -235,7 +236,7 @@ class omnivore_to_anki:
 
         n_created = 0
         for f_article in tqdm(files[:n_article_to_process], unit="article", desc="Parsing"):
-            self.p(f"Processing {f_article}")
+            self.p(f"Processing {f_article.replace(self.start_name, "")}")
             n_new = self.parse_one_article(f_article)
             n_created += n_new
             if n_cards_to_create != -1:
