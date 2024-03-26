@@ -337,11 +337,18 @@ class omnivore_to_anki:
             # highlight
             if (self.only_process_TODO_highlight_blocks and block.TODO_state == "TODO") or (not self.only_process_TODO_highlight_blocks):
 
-                n_highlight_blocks += 1
+                if not "omnivore-type" in prop or prop["omnivore-type"] != "highlight":
+                    self.p(
+                        "Skipping block with inappropriate properties.\n"
+                        f"Block content: {block.content}\n"
+                        f"Properties: {block.properties}\n"
+                    )
+                    continue
                 assert prop["omnivore-type"] == "highlight", (
                         f"Unexpected block properties: {prop}")
                 assert block.indentation_level > 2, (
                     f"Unexpected block indentation: {prop.indentation_level}")
+                n_highlight_blocks += 1
 
                 # get content of highlight
                 high = self.parse_block_content(block)
