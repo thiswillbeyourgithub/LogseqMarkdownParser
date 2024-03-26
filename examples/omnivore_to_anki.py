@@ -454,9 +454,22 @@ class omnivore_to_anki:
                 # if str(prop["omnivore_highlightposition"]) != "0":
                     # breakpoint()
 
-                if matching_art_cont.count(high) == 1:
-                    # if present only once: proceed
-                    ind = matching_art_cont.index(high)
+                if empty_article:
+                    cloze = self.context_to_cloze(high, high)
+                    df.loc[buid, "cloze"] = cloze
+                    df.loc[buid, "highlight_position"] = 0
+
+                elif matching_art_cont.count(high) >= 1:
+                    if matching_art_cont.count(high) == 1:
+                        ind = matching_art_cont.index(high)
+                    elif "highlight_position" in df.columns:
+                            # take the first index that is after
+                            # the latest highlight
+                            max_p = df.loc[:, "highlight_position"].values.max()
+                            ind = max_p + matching_art_cont[max_p:]
+                    else:  # take the first highlight found
+                        ind = matching_art_cont.index(high)
+                    df.loc[buid, "highlight_position"] = matching_art_cont.index(high)
                     before = matching_art_cont[max(0, ind-self.csize * 3 // 4):ind]
                     after = matching_art_cont[ind:ind+max(self.csize, int(len(high)*1.5))]
                     context = (before + after).strip()
@@ -470,72 +483,8 @@ class omnivore_to_anki:
 
                     # store position and cloze
                     df.loc[buid, "cloze"] = cloze
+                    print(cloze)
 
-                elif matching_art_cont.count(high) > 1:
-                    # if present several times: concatenate all the cloze as once
-                    # this is by far the simplest way to do it
-
-                    # getting all positions in the text
-                    positions = []
-                    for ic in range(matching_art_cont.count(high)):
-                        if not positions:
-                            positions.append(matching_art_cont.index(high))
-                        else:
-                            positions.append(matching_art_cont.index(high, positions[-1]+1))
-
-                    # first case: all appearances are withing the context_size
-                    if max(positions) - min(positions) < self.csize:
-                        context = matching_art_cont[max(0, min(positions) - self.csize//4):min(len(matching_art_cont), max(positions)+self.csize // 4)]
-                        assert len(context) < 2 * self.csize
-                        assert context.count(high) == matching_art_cont.count(high)
-
-                        cloze = self.context_to_cloze(high, context)
-
-                        df.loc[buid, "cloze"] = cloze
-
-                    # else: create one cloze for each and one card containing all those clozes
-                    else:
-                        # find ranges of each clozes
-                        ranges = []
-                        for p in positions:
-                            ranges.append([max(0, p-self.csize//2)])
-                            ranges[-1].append(p+self.csize)
-
-                        # fuse ranges that are close together
-                        while True:
-                            if None in ranges:
-                                ranges = [r for r in ranges if r is not None]
-                            for ir, r in enumerate(ranges):
-                                if ir >= len(ranges) - 1:  # special case: last range
-                                    if r[0] < ranges[ir-1][1]:
-                                        ranges[ir][0] = ranges[ir-1][0]
-                                        ranges[ir-1] = None
-                                        break
-                                else:
-                                    if r[1] > ranges[ir+1][0]:
-                                        ranges[ir][1] = ranges[ir+1][1]
-                                        ranges[ir+1] = None
-                                        break
-                            if None not in ranges:
-                                ranges = [r for r in ranges if r is not None]
-                                break
-                            if len(ranges) == 1:
-                                break
-                        assert ranges
-                        assert all (r1<r2 for r1, r2 in ranges)
-
-                        clozes = []
-                        for r1, r2 in ranges:
-                            context = matching_art_cont[max(0, r1 - self.csize//4):min(r2+self.csize//4, len(matching_art_cont))]
-                            context = self.extend_context(context, matching_art_cont)
-                            clozes.append(self.context_to_cloze(high, context))
-                        cloze = "\n\n".join(clozes)
-
-                        df.loc[buid, "cloze"] = cloze
-
-                elif empty_article:
-                    cloze = self.context_to_cloze(high, high)
-                    df.loc[buid, "cloze"] = cloze
 
                 else:
                     raise ValueError(f"Highlight was not part of the article? {high}")
@@ -550,6 +499,7 @@ class omnivore_to_anki:
         done = []
         for buid, row in df.iterrows():
             cloze = row["cloze"]
+            assert isinstance(cloze, str)
             for ib, block in enumerate(parsed.blocks):
                 if block.UUID == buid:
                     break
