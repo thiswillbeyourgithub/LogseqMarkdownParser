@@ -277,7 +277,7 @@ class omnivore_to_anki:
                     article_name = site.split("](")[0][1:]
                 else:
                     article_name = site
-                article_name = article_name.replace(" ", "_")
+                article_name = article_name.replace("'", "").replace("\"", "").title().replace(" ", "")
                 if len(article_name) > 50:
                     article_name = article_name[:50] + "…"
                 if not site.startswith("http"):
