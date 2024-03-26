@@ -500,6 +500,7 @@ class omnivore_to_anki:
         # insert cloze as blocks in a new page
         newpage = LogseqMarkdownParser.classes.LogseqPage(content="", verbose=False)
         newpage.set_property("omnivore-type", "flashcard_page")
+        newpage.set_property("deck", self.anki_deck_target)
         done = []
         for buid, row in df.iterrows():
             cloze = row["cloze"]
