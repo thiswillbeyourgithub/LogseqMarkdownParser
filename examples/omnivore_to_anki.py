@@ -400,7 +400,7 @@ class omnivore_to_anki:
                             f"Article contains {len(art_cont)} "
                             "characters so it might be too hard to find "
                             "a substring for in the current "
-                            "implemeentation. Open an issue.")
+                            "implementation. Open an issue.")
                     matches, ratio, dist, mathod = match_highlight_to_corpus(
                         query=high,
                         corpus=art_cont,
