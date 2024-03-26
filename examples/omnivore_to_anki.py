@@ -410,7 +410,7 @@ class omnivore_to_anki:
                     elif ratio <= 0.95:
                         mat = ""
                         for i, m in enumerate(matches):
-                            mat += f" * {i+1}: {m}"
+                            mat += f" * {i+1}: {m}\n"
                         message = (
                             "Low lev ratio after substring matching: \n"
                                 f"Ratio: {ratio:4f}\nHighlight: '{high}'"
