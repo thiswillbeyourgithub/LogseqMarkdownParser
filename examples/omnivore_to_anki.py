@@ -465,8 +465,8 @@ class omnivore_to_anki:
                     elif "highlight_position" in df.columns:
                             # take the first index that is after
                             # the latest highlight
-                            max_p = df.loc[:, "highlight_position"].values.max()
-                            ind = max_p + matching_art_cont[max_p:]
+                            max_p = int(df["highlight_position"].max())
+                            ind = max_p + matching_art_cont[max_p:].index(high)
                     else:  # take the first highlight found
                         ind = matching_art_cont.index(high)
                     df.loc[buid, "highlight_position"] = matching_art_cont.index(high)
