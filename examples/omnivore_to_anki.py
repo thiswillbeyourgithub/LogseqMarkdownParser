@@ -236,7 +236,7 @@ class omnivore_to_anki:
 
         n_created = 0
         for f_article in tqdm(files[:n_article_to_process], unit="article", desc="Parsing"):
-            self.p(f"Processing {f_article.replace(self.start_name, "")}")
+            self.p(f"Processing {f_article.replace(self.start_name, '')}")
             n_new = self.parse_one_article(f_article)
             n_created += n_new
             if n_cards_to_create != -1:
