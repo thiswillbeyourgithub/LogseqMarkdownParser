@@ -785,7 +785,7 @@ def match_highlight_to_corpus(
         ratios = Parallel(
             backend="threading",
             n_jobs=n_jobs,
-        )(delayed(lev.ratio)(query, b) for b in tqdm(batches, desc="Step1"))
+        )(delayed(lev.ratio)(query, b) for b in batches)
         max_rat = max(ratios)
         max_rat_idx = [i for i,r in enumerate(ratios) if r == max_rat]
 
@@ -804,7 +804,7 @@ def match_highlight_to_corpus(
             ratdist2 = Parallel(
                 backend="threading",
                 n_jobs=n_jobs,
-            )(delayed(get_rat_dist)(query, b) for b in tqdm(batches2, desc="Step2"))
+            )(delayed(get_rat_dist)(query, b) for b in batches2)
             ratios2 = [it[0] for it in ratdist2]
             distances2 = [it[1] for it in ratdist2]
             mr = max(ratios2)
