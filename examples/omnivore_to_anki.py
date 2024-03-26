@@ -776,6 +776,7 @@ def match_highlight_to_corpus(
                     best_matches = [batches2[ratios2.index(best_ratio)]]
 
         if best_matches:
+            best_matches = list(set(best_matches))
             return [best_matches, best_ratio, best_dist, True]
 
 
@@ -841,6 +842,7 @@ def match_highlight_to_corpus(
                 min_dist = ngram_dist
                 best_matches = [ngram]
 
+    best_matches = list(set(best_matches))
     assert len(best_matches) >= 1
     best_ratio = max([lev.ratio(query, bm) for bm in best_matches])
     return best_matches, best_ratio, min_dist, False
