@@ -478,7 +478,7 @@ class omnivore_to_anki:
 
                     # first case: all appearances are withing the context_size
                     if max(positions) - min(positions) < self.csize:
-                        context = matching_art_cont[min(positions) - self.csize//4:max(positions)+self.csize // 4]
+                        context = matching_art_cont[max(0, min(positions) - self.csize//4):min(len(matching_art_cont), max(positions)+self.csize // 4)]
                         assert len(context) < 2 * self.csize
                         assert context.count(high) == matching_art_cont.count(high)
 
