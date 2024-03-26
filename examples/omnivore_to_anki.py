@@ -799,6 +799,8 @@ def match_highlight_to_corpus(
         for idx in max_rat_idx:
             iidx = mini_corp.index("".join(batches[idx-1:idx+1]))
             area = mini_corp[iidx:iidx+3 * lq]
+            if not area.strip():
+                continue
             batches2 = [area[i:lq+i] for i in range(0, len(area) + 1)]
             batches2 = [b for b in batches2 if len(b.strip()) >= lq]
             ratdist2 = Parallel(
