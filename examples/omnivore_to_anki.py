@@ -234,7 +234,7 @@ class omnivore_to_anki:
         self.p(f"Found {len(files)} omnivore articles to create anki cards for")
 
         n_created = 0
-        for f_article in tqdm(files[:n_article_to_process], unit="article"):
+        for f_article in tqdm(files[:n_article_to_process], unit="article", desc="Parsing"):
             self.p(f"Processing {f_article}")
             n_new = self.parse_one_article(f_article)
             n_created += n_new
@@ -268,7 +268,7 @@ class omnivore_to_anki:
                 self.p("Some blocks have non unique UUID")
         df = pd.DataFrame(index=[])
 
-        for ib, block in enumerate(tqdm(parsed.blocks, unit="block")):
+        for ib, block in enumerate(tqdm(parsed.blocks, unit="block", desc="Highlights")):
             # find the block containing the article
             if "date-saved" in block.properties and not article_properties:
                 article_properties.update(block.properties)
