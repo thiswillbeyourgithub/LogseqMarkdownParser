@@ -348,7 +348,6 @@ class omnivore_to_anki:
                         f"Unexpected block properties: {prop}")
                 assert block.indentation_level > 2, (
                     f"Unexpected block indentation: {prop.indentation_level}")
-                n_highlight_blocks += 1
 
                 # get content of highlight
                 high = self.parse_block_content(block)
@@ -388,10 +387,15 @@ class omnivore_to_anki:
                     block_hash = self.hash(art_cont, high)
                     block.set_property("id", block_hash)
                 buid = block.properties["id"]
+                if buid in df.index:
+                    self.p(f"Ignoring duplicate block id: {buid}")
+                    continue
 
                 # the id of the cloze block should be a hash that only
                 # depends on the highlight and article
                 df.loc[buid, "cloze_hash"] = self.hash(high, art_cont)
+
+                n_highlight_blocks += 1
 
                 matching_art_cont = dedent(art_cont).strip()
                 if high not in art_cont and not empty_article:
