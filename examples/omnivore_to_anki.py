@@ -370,13 +370,15 @@ class omnivore_to_anki:
                     if high not in v:
                         best_candidate = None
                         min_dist = inf
+                        max_ratio = -inf
                         for k, v in article_candidates.items():
-                            _, dist = match_highlight_to_corpus(
+                            _, ratio, dist, method = match_highlight_to_corpus(
                                     query=high,
                                     corpus=v,
-                                    n_jobs=1)
-                            if dist < min_dist:
+                                    n_jobs=4)
+                            if dist < min_dist and ratio > max_ratio:
                                 min_dist = dist
+                                max_ratio = ratio
                                 best_candidate = k
                         assert best_candidate
                         art_cont = article_candidates[best_candidate]
@@ -399,25 +401,34 @@ class omnivore_to_anki:
                             "characters so it might be too hard to find "
                             "a substring for in the current "
                             "implemeentation. Open an issue.")
-                    best_substring_match, min_distance = match_highlight_to_corpus(
+                    matches, ratio, dist, mathod = match_highlight_to_corpus(
                         query=high,
                         corpus=art_cont,
-                        n_jobs=1)
-                    ratio = lev.ratio(high, best_substring_match)
-                    if ratio <= 0.90:
+                        n_jobs=4)
+                    if len(matches) == 1:
+                        best_substring_match = matches[0]
+                    elif ratio <= 0.95:
+                        mat = ""
+                        for i, m in enumerate(matches):
+                            mat += f" * {i+1}: {m}"
                         message = (
                             "Low lev ratio after substring matching: \n"
                                 f"Ratio: {ratio:4f}\nHighlight: '{high}'"
-                                f"\nMatch: {best_substring_match}\n\n"
+                                f"\nMatches:\n{mat}\n\n"
                                 "\n"
-                                "Is this okay?\n"
-                                "Y(es) / Q(uit)\n"
+                                "Enter the id of the best match or Q(uit) or D(ebug).\n"
                         )
                         ans = ""
-                        while ans.lower() not in ["y", "yes", "n", "no", "q", "quit"]:
+                        while ans.lower() not in [
+                            "y", "yes", "n", "no", "q", "quit",
+                            "d", "debug"] or ans.isdigit():
                             ans = input(message)
+                            if ans.lower().startswith("d"):
+                                breakpoint()
                         if ans.lower().startswith("q"):
                             raise SystemExit("Quitting.")
+                        elif ans.isdigit():
+                            best_substring_match = matches[int(ans)-1]
 
                     matching_art_cont = art_cont.replace(best_substring_match, high, 1)
                 assert high in matching_art_cont or empty_article, f"Highlight not part of article:\n{high}\nNot in:\n{art_cont}"
@@ -711,8 +722,7 @@ def match_highlight_to_corpus(
         query: str,
         corpus: str,
         case_sensitive: bool = True,
-        step_factor: int = 128,
-        favour_smallest: bool = False,
+        step_factor: int = 500,
         n_jobs: int = -1,
     ) -> List:
     '''
@@ -724,21 +734,92 @@ def match_highlight_to_corpus(
     - query: str
     - corpus: str
     - case_sensitive: bool
-    - step_factor: int  
+    - step_factor: int
+        Only used in the long way.
         Influences the resolution of the thorough search once the general region is found.
         The increment in ngrams lengths used for the thorough search is calculated as len(query)//step_factor.
         Increasing this increases the number of ngram lengths used in the thorough search and increases the chances 
         of getting the optimal solution at the cost of runtime and memory.
-    - favour_smaller: bool
-        Once the region of the best match is found, the search proceeds from larger to smaller ngrams or vice versa.
-        If two or more ngrams have the same minimum distance then this flag controls whether the largest or smallest
-        is returned.
     - n_jobs: int
         number of jobs to use for multithreading. 1 to disable
 
-    Returns  
-    [Best matching substring of corpus, Levenshtein distance of closest match]
+    Returns
+    [
+        List of best matching substrings of corpus,
+        Levenshtein ratio of closest match,
+        Levenshtein distance of closest match,
+        True if used the quick way False if using the long way,
+        ]
     '''
+
+    # quick way
+    lq = len(query)
+    lc = len(corpus)
+    lquery = query.casefold()
+    lcorp = corpus.casefold()
+    # 1. find most probably region that contains the appropriate words
+    qwords = [w.strip() for w in set(lquery.casefold().split(" ")) if len(w.strip()) > 3]
+    indexes = []
+    for w in qwords:
+        m = []
+        prev = 0
+        while w in lcorp[prev:] and len(m) < 20:
+            m.append(prev + lcorp[prev:].index(w))
+            prev = m[-1] + 1
+        if len(m) > 20:
+            continue
+        if m:
+            indexes.append(m)
+    if indexes:
+        mins = [min(ind) for ind in indexes]
+        maxs = [max(ind) for ind in indexes]
+        mean_min = max(0, int(sum(mins) / len(mins)) - int(lq * 1.2))
+        mean_max = min(lc, int(sum(maxs) / len(maxs)) + int(lq * 1.2))
+        
+        mini_corp = corpus[mean_min:mean_max+1]
+
+        # 2. in the region, check the lev ratio in a sliding window
+        # to  determine best sub region
+        batches = [mini_corp[i*lq:(i+1)*lq] for i in range(0, len(mini_corp) // lq + 1)]
+        batches = [b for b in batches if b.strip()]
+        ratios = Parallel(
+            backend="threading",
+            n_jobs=n_jobs,
+        )(delayed(lev.ratio)(query, b) for b in tqdm(batches, desc="Step1"))
+        max_rat = max(ratios)
+        max_rat_idx = [i for i,r in enumerate(ratios) if r == max_rat]
+
+        # 3. in the best sub region, find the best substring with a 1
+        # character sliding window using both ratio and distance
+        best_ratio = -inf
+        best_dist = inf
+        best_matches = []
+        def get_rat_dist(s1, s2):
+            return [lev.ratio(s1, s2), lev.distance(s1, s2)]
+        for idx in max_rat_idx:
+            iidx = mini_corp.index("".join(batches[idx-1:idx+1]))
+            area = mini_corp[iidx:iidx+3 * lq]
+            batches2 = [area[i:lq+i] for i in range(0, len(area) + 1)]
+            batches2 = [b for b in batches2 if len(b.strip()) >= lq]
+            ratdist2 = Parallel(
+                backend="threading",
+                n_jobs=n_jobs,
+            )(delayed(get_rat_dist)(query, b) for b in tqdm(batches2, desc="Step2"))
+            ratios2 = [it[0] for it in ratdist2]
+            distances2 = [it[1] for it in ratdist2]
+            mr = max(ratios2)
+            md = min(distances2)
+            if mr >= best_ratio and md <= best_dist:
+                if mr == best_ratio and md == best_dist:
+                    best_matches.append(batches2[ratios2.index(best_ratio)])
+                else:
+                    best_ratio = mr
+                    best_dist = md
+                    best_matches = [batches2[ratios2.index(best_ratio)]]
+
+        if best_matches:
+            return [best_matches, best_ratio, best_dist, True]
+
 
     if not case_sensitive:
         query = query.casefold()
@@ -775,8 +856,6 @@ def match_highlight_to_corpus(
     # Once we have the general region of the best match we do a more thorough search in the region
     # This is done by considering ngrams of various lengths in the region using a step of 1
     ngram_lens = [l for l in range(narrowed_corpus_len, query_len_by_2 - 1, -query_len_by_step_factor)]
-    if favour_smallest:
-        ngram_lens = reversed(ngram_lens)
     # Construct sets of ngrams where each set has ngrams of a particular length made over the region with a step of 1
     narrowed_corpus_ngrams = [
         [narrowed_corpus[i:i+ngram_len] for i in range(0, narrowed_corpus_len-ngram_len+1)]
@@ -793,14 +872,20 @@ def match_highlight_to_corpus(
         backend="threading",
         n_jobs=n_jobs,
     )(delayed(ld_set)(ngram_set, query) for ngram_set in narrowed_corpus_ngrams)
+
+    best_matches = []
     for ing, ngram_set in enumerate(narrowed_corpus_ngrams):
         for iing, ngram in enumerate(ngram_set):
             ngram_dist = dist_list[ing][iing]
-            if ngram_dist < min_dist:
+            if ngram_dist == min_dist:
+                best_matches.append(ngram)
+            elif ngram_dist < min_dist:
                 min_dist = ngram_dist
-                closest_match = ngram
+                best_matches = [ngram]
 
-    return closest_match, min_dist
+    assert len(best_matches) >= 1
+    best_ratio = max([lev.ratio(query, bm) for bm in best_matches])
+    return best_matches, best_ratio, min_dist, False
 
 @mem.cache()
 def download_pdf(url):
