@@ -476,7 +476,7 @@ class omnivore_to_anki:
                     context = self.extend_context(context, matching_art_cont)
                     assert context
                     assert high in context
-                    assert len(context) > len(high)
+                    assert len(context) >= len(high)
 
                     # add cloze
                     cloze = self.context_to_cloze(high, context)
@@ -759,7 +759,6 @@ def match_highlight_to_corpus(
             if not area.strip():
                 continue
             batches2 = [area[i:lq+i] for i in range(0, len(area) + 1)]
-            batches2 = [b for b in batches2 if len(b.strip()) >= lq]
             ratdist2 = Parallel(
                 backend="threading",
                 n_jobs=n_jobs,
