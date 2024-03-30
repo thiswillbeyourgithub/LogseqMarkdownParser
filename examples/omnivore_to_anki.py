@@ -137,7 +137,7 @@ class omnivore_to_anki:
         n_article_to_process: int = -1,
         n_cards_to_create: int = -1,
         recent_article_fist: bool = True,
-        unhighlight_others: bool = False,
+        unhighlight_others: bool = True,
         overwrite_flashcard_page: bool = False,
         only_process_TODO_highlight_blocks: bool = True,
         article_name_as_tag: bool = True,
@@ -170,7 +170,7 @@ class omnivore_to_anki:
             -1 to disable
         recent_article_fist: bool, default True
 
-         unhighlight_others: bool, default False
+         unhighlight_others: bool, default True
             if True, remove highlight '==' around highlights when creating
             the cloze
         overwrite_flashcard_page: bool, default False
