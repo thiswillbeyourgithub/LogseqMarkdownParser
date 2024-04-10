@@ -37,7 +37,8 @@ from joblib import Parallel, delayed, Memory
 from typing import List
 from math import inf
 
-import Levenshtein as lev
+from rapidfuzz.distance.Levenshtein import normalized_distance as lev_dist
+from rapidfuzz.fuzz import ratio as lev_ratio
 
 # to parse PDF
 from langchain_community.document_loaders import PyPDFLoader
@@ -805,7 +806,7 @@ def match_highlight_to_corpus(
     dists = Parallel(
         backend="threading",
         n_jobs=n_jobs,
-    )(delayed(lev.distance)(ngram, query) for ngram in corpus_ngrams)
+    )(delayed(lev_dist)(ngram, query) for ngram in corpus_ngrams)
     for idx, ngram in enumerate(corpus_ngrams):
         ngram_dist = dists[idx]
         if ngram_dist < min_dist:
@@ -832,7 +833,7 @@ def match_highlight_to_corpus(
     def ld_set(ngram_set, query):
         dists = []
         for ngram in ngram_set:
-            dists.append(lev.distance(ngram, query))
+            dists.append(lev_dist(ngram, query))
         return dists
     dist_list = Parallel(
         backend="threading",
@@ -851,7 +852,7 @@ def match_highlight_to_corpus(
 
     best_matches = list(set(best_matches))
     assert len(best_matches) >= 1
-    best_ratio = max([lev.ratio(query, bm) for bm in best_matches])
+    best_ratio = max([lev_ratio(query, bm) for bm in best_matches])
     return best_matches, best_ratio, min_dist, False
 
 @mem.cache()
