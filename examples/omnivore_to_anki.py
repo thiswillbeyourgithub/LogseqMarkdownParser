@@ -413,7 +413,7 @@ class omnivore_to_anki:
                         n_jobs=4)
                     if len(matches) == 1:
                         best_substring_match = matches[0]
-                    elif ratio <= 0.95:
+                    elif ratio <= 95:
                         mat = ""
                         for i, m in enumerate(matches):
                             mat += f" * {i+1}: '{m}'\n"
