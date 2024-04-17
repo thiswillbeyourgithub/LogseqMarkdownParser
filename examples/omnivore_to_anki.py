@@ -386,7 +386,7 @@ class omnivore_to_anki:
                                              #
                 # add id property if missing
                 if "id" not in block.properties:
-                    block_hash = self.hash(art_cont, high)
+                    block_hash = self.hash(art_cont + high)
                     block.set_property("id", block_hash)
                 buid = block.properties["id"]
                 if buid in df.index:
@@ -395,7 +395,7 @@ class omnivore_to_anki:
 
                 # the id of the cloze block should be a hash that only
                 # depends on the highlight and article
-                df.loc[buid, "cloze_hash"] = self.hash(high, art_cont)
+                df.loc[buid, "cloze_hash"] = self.hash(art_cont + high)
 
                 n_highlight_blocks += 1
 
@@ -653,14 +653,11 @@ class omnivore_to_anki:
 
         return context
 
-    def hash(self, *args: List[str]) -> str:
-        temp = args[0]
-        for new in args[1:]:
-            temp += new
+    def hash(self, to_hash: str) -> str:
         return str(
                 uuid.uuid3(
                     uuid.NAMESPACE_URL,
-                    temp)
+                    to_hash)
         )
 
     def parse_label(self, label: str) -> str:
