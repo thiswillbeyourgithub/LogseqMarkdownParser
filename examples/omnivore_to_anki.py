@@ -386,7 +386,7 @@ class omnivore_to_anki:
                                              #
                 # add id property if missing
                 if "id" not in block.properties:
-                    block_hash = self.hash(art_cont + high)
+                    block_hash = self.hash(art_prop["site"] + block.properties["omnivore_highlighturl"])
                     block.set_property("id", block_hash)
                 buid = block.properties["id"]
                 if buid in df.index:
@@ -394,8 +394,9 @@ class omnivore_to_anki:
                     continue
 
                 # the id of the cloze block should be a hash that only
-                # depends on the highlight and article
-                df.loc[buid, "cloze_hash"] = self.hash(art_cont + high)
+                # depends on the highlight and article, but also remaing
+                # different from the highlight block id
+                df.loc[buid, "cloze_hash"] = self.hash(art_prop["site"] + block.properties["omnivore_highlighturl"] + "cloze")
 
                 n_highlight_blocks += 1
 
