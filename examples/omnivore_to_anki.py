@@ -254,7 +254,7 @@ class omnivore_to_anki:
         article_name = None
         article_candidates = {}
 
-        article_properties = {}
+        art_prop = {}
 
         parsed = LogseqMarkdownParser.parse_file(f_article, verbose=False)
         assert len(parsed.blocks) >= 4
@@ -272,9 +272,9 @@ class omnivore_to_anki:
 
         for ib, block in enumerate(tqdm(parsed.blocks, unit="block", desc="Highlights")):
             # find the block containing the article
-            if "date-saved" in block.properties and not article_properties:
-                article_properties.update(block.properties)
-                site = article_properties["site"].strip()
+            if "date-saved" in block.properties and not art_prop:
+                art_prop.update(block.properties)
+                site = art_prop["site"].strip()
                 if site.startswith("[") and "](" in site:
                     article_name = site.split("](")[0][1:]
                 else:
