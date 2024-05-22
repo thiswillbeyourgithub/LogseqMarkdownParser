@@ -100,7 +100,7 @@ class LogseqPage:
                 print("\n")
                 print(f"* indentation level: {block.indentation_level}")
                 print(f"* TODO state: {block.TODO_state}")
-                print(f"* properties: {block.get_properties()}")
+                print(f"* properties: {block.properties}")
                 print(f"* UUID: {block.UUID}")
 
             self.blocks.append(block)
