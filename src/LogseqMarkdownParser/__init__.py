@@ -7,6 +7,8 @@ try:
 except:
     import classes
 
+__VERSION__="2.5"
+
 def parse_file(
         file_path,
         verbose=False,
