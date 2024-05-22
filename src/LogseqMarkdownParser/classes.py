@@ -66,6 +66,9 @@ class LogseqPage:
 
         blocks = [line for line in lines if line is not None]
 
+        if blocks:
+            assert first_block_reached
+
         self.page_properties = {}  # the property of the whole page have to be stored separatly
         prop = re.findall(self.PAGE_PROP_REGEX, pageprop)
         for found in prop:
