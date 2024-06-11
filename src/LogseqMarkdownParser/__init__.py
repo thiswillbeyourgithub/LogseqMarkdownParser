@@ -33,14 +33,19 @@ def parse_file(
     else:
         content = sys.stdin.read()
 
-    parsed_text = LogseqPage(
+    parsed = LogseqPage(
             content=content,
             verbose=verbose,
             )
+
     if as_json:
-        return json.dumps(parsed_text.as_json(), indent=4, ensure_ascii=False)
+        return json.dumps(
+            parsed.as_json(),
+            indent=4,
+            ensure_ascii=False
+        )
     else:
-        return parsed_text
+        return parsed
 
 def cli() -> None:
     fire.Fire(parse_file)
