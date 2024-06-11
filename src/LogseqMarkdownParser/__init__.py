@@ -7,6 +7,9 @@ try:
 except:
     import classes
 
+LogseqPage = classes.LogseqPage
+LogseqBlock = classes.LogseqBlock
+
 __VERSION__="2.5"
 
 def parse_file(

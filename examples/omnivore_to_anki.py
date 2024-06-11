@@ -500,7 +500,7 @@ class omnivore_to_anki:
         assert len(df) == n_highlight_blocks
 
         # insert cloze as blocks in a new page
-        newpage = LogseqMarkdownParser.classes.LogseqPage(content="", verbose=False)
+        newpage = LogseqMarkdownParser.LogseqPage(content="", verbose=False)
         newpage.set_property("omnivore-type", "flashcard_page")
         newpage.set_property("deck", self.anki_deck_target)
         done = []
@@ -514,7 +514,7 @@ class omnivore_to_anki:
 
             # turn the cloze into a block
             cont = f"- {cloze.strip()}"
-            cloze_block = LogseqMarkdownParser.classes.LogseqBlock(cont, verbose=False)
+            cloze_block = LogseqMarkdownParser.LogseqBlock(cont, verbose=False)
             cloze_block.indentation_level = 0
             cloze_block.set_property("omnivore-type", "highlightcloze")
             cloze_block.set_property("omnivore-clozedate", str(datetime.today()))
