@@ -13,6 +13,7 @@ a simple python script to load a markdown file and easily access the properties 
 * easily save to a path
 * parse as json: `LogseqMarkdownParser some_file.md --as_json |jq`
 * supports stdin: `cat some_file.md | LogseqMarkdownParser --as_json | jq`
+* shell completion: `eval "$(LogseqMarkdownParser -- --completion)"` or `eval "$(cat completion.bash)"`
 
 ## Usage
 * Install with `python -m pip install LogseqMarkdownParser`
