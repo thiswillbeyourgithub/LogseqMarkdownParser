@@ -13,7 +13,7 @@ LogseqBlock = classes.LogseqBlock
 __VERSION__="2.5"
 
 def parse_file(
-    file_path: str,
+    file_path: str = None,
     verbose: bool = False,
     as_json: bool = False,
     ):
@@ -28,6 +28,7 @@ def parse_file(
     as_json: default to False.
         If True will output a json string meant to be piped to jq.
     """
+    assert file_path is not None, "Must supply a file_path"
     assert Path(file_path).exists(), f"{file_path} not found"
 
     content = Path(file_path).read_text()
