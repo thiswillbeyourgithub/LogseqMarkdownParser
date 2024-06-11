@@ -3,12 +3,10 @@ from pathlib import Path
 import fire
 
 try:
-    from . import classes
+    from .classes import LogseqPage, LogseqBlock
 except:
-    import classes
+    from classes import LogseqPage, LogseqBlock
 
-LogseqPage = classes.LogseqPage
-LogseqBlock = classes.LogseqBlock
 
 __VERSION__="2.5"
 
