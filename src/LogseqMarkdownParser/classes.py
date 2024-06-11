@@ -180,10 +180,11 @@ class LogseqPage:
             del self.page_properties[key]
 
     def export_to(
-            self,
-            file_path: str,
-            overwrite=False,
-            ) -> None:
+        self,
+        file_path: str,
+        overwrite: bool = False,
+        allow_empty: bool = False,
+        ) -> None:
         """
         export the blocks to file_path
         """
@@ -194,12 +195,13 @@ class LogseqPage:
 
         cont = self.content
 
-        if cont:
-            cont = cont.replace("    ", "\t")
-            with open(file_path, "w") as f:
-                f.write(cont)
-        else:
-            print("No blocks nor page property found, so we won't even create an output file.")
+        cont = cont.replace("    ", "\t")
+
+        if not cont:
+            assert allow_empty, "Can't save an empty file if allow_empty is False"
+
+        with open(file_path, "w") as f:
+            f.write(cont)
 
     def __str__(self) -> str:
         return "\n".join([str(b) for b in self.blocks])
