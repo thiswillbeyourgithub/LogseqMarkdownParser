@@ -1,3 +1,4 @@
+import sys
 import json
 from pathlib import Path
 import fire
@@ -25,10 +26,13 @@ def parse_file(
     as_json: default to False.
         If True will output a json string meant to be piped to jq.
     """
-    assert file_path is not None, "Must supply a file_path"
-    assert Path(file_path).exists(), f"{file_path} not found"
+    if file_path is not None:
+        assert Path(file_path).exists(), f"{file_path} not found"
 
-    content = Path(file_path).read_text()
+        content = Path(file_path).read_text()
+    else:
+        content = sys.stdin.read()
+
     parsed_text = LogseqPage(
             content=content,
             verbose=verbose,
