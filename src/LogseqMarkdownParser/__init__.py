@@ -13,10 +13,10 @@ LogseqBlock = classes.LogseqBlock
 __VERSION__="2.5"
 
 def parse_file(
-        file_path,
-        verbose=False,
-        as_json=False,
-        ):
+    file_path: str,
+    verbose: bool = False,
+    as_json: bool = False,
+    ):
     """
     Parameters:
     -----------
@@ -40,8 +40,8 @@ def parse_file(
     else:
         return parsed_text
 
-def cli():
-    return fire.Fire(parse_file)
+def cli() -> None:
+    fire.Fire(parse_file)
 
 if __name__ == "__main__":
-    done = fire.Fire(parse_file)
+    fire.Fire(parse_file)
