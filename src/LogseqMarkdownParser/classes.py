@@ -22,11 +22,11 @@ class LogseqPage:
     """
     PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]*\w:: .+)")
     def __init__(
-            self,
-            content: str,
-            check_parsing=False,
-            verbose=False,
-            ):
+        self,
+        content: str,
+        check_parsing: bool = False,
+        verbose: bool = False,
+        ) -> None:
         self.verbose = verbose
         assert isinstance(content, str), (
             f"content must be of type string, not '{type(content)}'")
@@ -162,12 +162,12 @@ class LogseqPage:
         return temp
 
     @content.setter
-    def content(self, new: str):
+    def content(self, new: str) -> None:
         raise Exception(
             "Cannot edit page content directly. "
             "You have to edit the blocks individually.")
 
-    def set_property(self, key, value=None):
+    def set_property(self, key: str, value: str = None) -> None:
         """convenience function to harmonize behavior of page and blocks.
         You can edit self.page_properties as a regular dict instead.
         Set None as the value to delete a key.
@@ -221,7 +221,7 @@ class LogseqBlock:
             self,
             content: str,
             verbose: bool = False,
-            ):
+            ) -> None:
         """
         Class with the following new attributes:
             indentation_level: in number of spaces, with tab=4
@@ -278,7 +278,7 @@ class LogseqBlock:
         return cont
 
     @content.setter
-    def content(self, new: str):
+    def content(self, new: str) -> str:
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
         assert new.lstrip().startswith("-") or ":: " in new, "stripped new content must start with '-' or be a property"
@@ -292,7 +292,7 @@ class LogseqBlock:
         return self._get_indentation()
 
     @indentation_level.setter
-    def indentation_level(self, new: int):
+    def indentation_level(self, new: int) -> None:
         # note: we don't compare the new to the old value
         # because this way we make sure that leading spaces are replaced
         # by tabs
@@ -309,7 +309,7 @@ class LogseqBlock:
         return self._get_TODO_state()
 
     @TODO_state.setter
-    def TODO_state(self, new: str):
+    def TODO_state(self, new: str) -> None:
         old = self._get_TODO_state()
         assert old in ["TODO", "DOING", "NOW", "LATER", "DONE", None], (
             f"Invalid old TODO value: {old}")
@@ -335,11 +335,11 @@ class LogseqBlock:
             self._changed = True
 
     @property
-    def properties(self) -> str:
+    def properties(self) -> dict:
         return self._get_properties()
 
     @properties.setter
-    def property_failedsetter(self, *args, **kwargs):
+    def property_failedsetter(self, *args, **kwargs) -> None:
         raise Exception("To modify the properties you must use self.set_property(key, value)")
 
     def _get_properties(self) -> dict:
@@ -369,7 +369,7 @@ class LogseqBlock:
     def set_property(
             self,
             key: str,
-            value=None):
+            value: str = None) -> None:
         """
         set a property to the block.
         if the value is None, the property will be deleted
