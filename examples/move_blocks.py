@@ -54,6 +54,7 @@ def main(
     # find index of the pattern line
     good_location = None
     level = None
+    skip_sep = True  # don't add separator if no other children blocks (only works if order=='after')
     for ib, ob in enumerate(parsed_output.blocks):
         if pattern.match(ob.content):
             assert good_location is None and level is None
@@ -67,6 +68,7 @@ def main(
                 raise ValueError(order)
         elif good_location and ob.indentation_level <= level:
             assert order == "after"
+            skip_sep = False
             good_location = ib
             break
     assert good_location is not None and level is not None
@@ -84,7 +86,7 @@ def main(
         # don't forget to indent the new blocks
         parsed_output.blocks[good_location].indentation_level += level + 4
 
-    if order == "after":
+    if order == "after" and not skip_sep:
         # add separator block after adding the new blocks
         sep_block = LogseqMarkdownParser.LogseqBlock(content=sep, verbose=verbose_parsing)
         sep_block.indentation_level = level + 4
