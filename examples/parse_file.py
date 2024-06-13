@@ -9,6 +9,15 @@ sys.path = saved_path
 def parse_file(
     path: str,
     ):
+    """
+    Parse a markdown file using LogseqMarkdownParser.
+
+    Args:
+        path (str): The path to the markdown file to be parsed.
+
+    Returns:
+        None
+    """
     parsed = LogseqMarkdownParser.parse_file(
         path,
         verbose=True)
