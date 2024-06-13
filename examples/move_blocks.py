@@ -1,11 +1,14 @@
 import fire
 import LogseqMarkdownParser
 import re
-from pathlib import Path
+from pathlib import Path, PosixPath
+from typeguard import typechecked
+from typing import Union
 
+@typechecked
 def main(
-    input: str,
-    output: str,
+    input: Union[str, PosixPath],
+    output: Union[str, PosixPath],
     regex_pattern: str = "- #+ to sort",
     order: str = "after",
     only_copy: bool = False,
