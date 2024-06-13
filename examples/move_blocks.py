@@ -24,7 +24,7 @@ def main(
     - regex_pattern: Regular expression to match the target header.
     - order: Determines the order of the new blocks relative to the target header ('before' or 'after').
     - only_copy: wether to modify the input file or not
-    - sep: Separator string to use between old and new blocks.
+    - sep: Separator string to use between old and new blocks. If empty, no separator will be used.
     - verbose_parsing: If True, print additional parsing information.
 
     Usage example:
@@ -86,7 +86,7 @@ def main(
             break
     assert good_location is not None and level is not None
 
-    if order == "before":
+    if order == "before" and sep.strip():
         # add separator block before adding the new blocks
         sep_block = LogseqMarkdownParser.LogseqBlock(content=sep, verbose=verbose_parsing)
         sep_block.indentation_level = level + 4
@@ -99,7 +99,7 @@ def main(
         # don't forget to indent the new blocks
         parsed_output.blocks[good_location].indentation_level += level + 4
 
-    if order == "after" and not skip_sep:
+    if order == "after" and not skip_sep and sep.strip():
         # add separator block after adding the new blocks
         sep_block = LogseqMarkdownParser.LogseqBlock(content=sep, verbose=verbose_parsing)
         sep_block.indentation_level = level + 4
