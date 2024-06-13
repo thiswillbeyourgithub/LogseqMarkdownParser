@@ -8,6 +8,7 @@ def main(
     output: str,
     regex_pattern: str = "- #+ to sort",
     order: str = "after",
+    only_copy: bool = False,
     sep: str = "- ---",
     verbose_parsing: bool = False,
     ) -> None:
@@ -19,12 +20,13 @@ def main(
     - output: Path to the output file.
     - regex_pattern: Regular expression to match the target header.
     - order: Determines the order of the new blocks relative to the target header ('before' or 'after').
+    - only_copy: wether to modify the input file or not
     - sep: Separator string to use between old and new blocks.
     - verbose_parsing: If True, print additional parsing information.
 
     Usage example:
 
-    `python move_blocks.py --input my_file.md --output my_other_file.md --regex_pattern "- #+ my target header" --order "after"` --sep "- ---"
+    `python move_blocks.py --input my_file.md --output my_other_file.md --regex_pattern "- #+ my target header" --order "after"` --sep "- ---" --only_copy=0`
         This will:
         * Take all the logseq blocks from the file "my_file.md"
         * Move those blocks to the file "my_other_file.md"
@@ -103,14 +105,16 @@ def main(
     assert parsed_output.content, "something went wrong"
 
     # exporting to temporary files
-    parsed_input.export_to(input + ".temp", overwrite=True, allow_empty=True)
-    assert Path(input + ".temp")
+    if not only_copy:
+        parsed_input.export_to(input + ".temp", overwrite=True, allow_empty=True)
+        assert Path(input + ".temp")
     parsed_output.export_to(output + ".temp", overwrite=True)
     assert Path(output + ".temp")
 
     # moving temporary files as permanent
-    Path(input).unlink(missing_ok=False)
-    Path(input + ".temp").rename(input)
+    if not only_copy:
+        Path(input).unlink(missing_ok=False)
+        Path(input + ".temp").rename(input)
     Path(output).unlink(missing_ok=False)
     Path(output + ".temp").rename(output)
 
