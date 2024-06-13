@@ -14,6 +14,14 @@ def main(
     """
     Move blocks from one file to another.
 
+    Params:
+    - input: Path to the input file.
+    - output: Path to the output file.
+    - regex_pattern: Regular expression to match the target header.
+    - order: Determines the order of the new blocks relative to the target header ('before' or 'after').
+    - sep: Separator string to use between old and new blocks.
+    - verbose_parsing: If True, print additional parsing information.
+
     Usage example:
 
     `python move_blocks.py --input my_file.md --output my_other_file.md --regex_pattern "- #+ my target header" --order "after"` --sep "- ---"
