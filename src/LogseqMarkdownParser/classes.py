@@ -32,7 +32,6 @@ class LogseqPage:
             f"content must be of type string, not '{type(content)}'")
 
         content = content.strip()
-        assert content, "Cannot supply empty content"
 
         # detect each block (read each line then merge with the latest block)
         lines = content.split("\n")
