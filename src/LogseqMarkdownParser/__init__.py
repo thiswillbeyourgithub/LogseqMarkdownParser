@@ -8,7 +8,7 @@ try:
 except:
     from classes import LogseqPage, LogseqBlock
 
-__VERSION__: str = "2.6"
+__VERSION__: str = "2.7"
 
 def parse_file(
     file_path: str = None,
