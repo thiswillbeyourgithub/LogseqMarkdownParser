@@ -3,6 +3,14 @@ from pathlib import Path
 import uuid
 import re
 
+# if used in a tqdm loop, it's annoying to have the prints appear
+# if tqdm is found, use it instead
+try:
+    from tqdm import tqdm
+    print = tqdm.write
+except Exception as err:
+    pass
+
 
 class LogseqPage:
     """simple class that stores the markdown blocks in the self.blocks attribute.
