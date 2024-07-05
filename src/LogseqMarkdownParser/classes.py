@@ -36,6 +36,7 @@ class LogseqPage:
 
     """
     PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]*\w:: .+)")
+
     def __init__(
         self,
         content: str,
@@ -57,7 +58,8 @@ class LogseqPage:
             for li in lines
         ]
 
-        assert lines[0].lstrip().startswith("-") or ":: " in lines[0] or (len(lines)==1 and not lines[0].strip()), f"First line of document must start with '[ \t]*- ' or contain a page property or the document must be empty"
+        assert lines[0].lstrip().startswith("-") or ":: " in lines[0] or (len(lines) == 1 and not lines[0].strip()
+                                                                          ), f"First line of document must start with '[ \t]*- ' or contain a page property or the document must be empty"
         lines = [l for l in lines if l.strip()]  # remove empty lines
         pageprop = ""  # as string first
         first_block_reached = False
@@ -103,11 +105,12 @@ class LogseqPage:
         # parse each block
         self.blocks = []
         for index, block_str in enumerate(blocks):
-            assert isinstance(block_str, str), f"block is not string: '{block_str}'"
+            assert isinstance(
+                block_str, str), f"block is not string: '{block_str}'"
             block = LogseqBlock(
-                    content=block_str,
-                    verbose=self.verbose,
-                    )
+                content=block_str,
+                verbose=self.verbose,
+            )
             assert block.content == block_str.replace(u"\xa0", u" "), (
                 "block content modifying unexpectedly")
 
@@ -129,7 +132,8 @@ class LogseqPage:
         if reformed.replace(u"\xa0", u" ") != content.replace(u"\xa0", u" "):
             print("\n\nError: file content differed after parsing:")
             print(f"Length: '{len(reformed)}' vs '{len(content)}'")
-            print("Nb lines: '" + str(len(reformed.split('\n'))) + " vs '" + str(len(content.split('\n'))) + "'")
+            print("Nb lines: '" + str(len(reformed.split('\n'))) +
+                  " vs '" + str(len(content.split('\n'))) + "'")
             spco = content.split("\n")
             spref = reformed.split("\n")
             nref = len(spref)
@@ -154,7 +158,8 @@ class LogseqPage:
     @property
     def content(self) -> str:
         "return the concatenated list of each block of the page"
-        temp = "\n".join([f"{k}:: {v}" for k, v in self.page_properties.items()])
+        temp = "\n".join(
+            [f"{k}:: {v}" for k, v in self.page_properties.items()])
         if self.blocks:
             if temp:
                 temp += "\n"
@@ -274,8 +279,8 @@ class LogseqBlock:
         self.verbose = verbose
         content = content.replace(u'\xa0', u' ')  # replace by regular space
         self._blockvalues = {
-                'content': content,
-            }
+            'content': content,
+        }
         if "id" in self.properties:
             self._blockvalues["UUID"] = self.properties["id"]
         else:
@@ -300,7 +305,8 @@ class LogseqBlock:
     def content(self, new: str) -> str:
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
-        assert new.lstrip().startswith("-") or ":: " in new, "stripped new content must start with '-' or be a property"
+        assert new.lstrip().startswith(
+            "-") or ":: " in new, "stripped new content must start with '-' or be a property"
         new = new.replace(u'\xa0', u' ')
         if new != old:
             self._changed = True
@@ -342,15 +348,15 @@ class LogseqBlock:
         if old != new:
             if new is None:  # just delete
                 self.content = self.content.replace(
-                        f"- {old} ",
-                        "- ",
-                        1,
-                        )
+                    f"- {old} ",
+                    "- ",
+                    1,
+                )
             else:
                 self.content = self.content.replace(
-                        f"- {old} ",
-                        f"- {new} ",
-                        1)
+                    f"- {old} ",
+                    f"- {new} ",
+                    1)
             self._changed = True
 
     @property
@@ -359,13 +365,15 @@ class LogseqBlock:
 
     @properties.setter
     def property_failedsetter(self, *args, **kwargs) -> None:
-        raise Exception("To modify the properties you must use self.set_property(key, value)")
+        raise Exception(
+            "To modify the properties you must use self.set_property(key, value)")
 
     def _get_properties(self) -> dict:
         prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
         properties = {}
         for found in prop:
-            assert found == found.lstrip(), f"REGEX match an incorrect property: {found}"
+            assert found == found.lstrip(
+            ), f"REGEX match an incorrect property: {found}"
 
             try:
                 key, value = found.split(":: ")
@@ -399,10 +407,12 @@ class LogseqBlock:
             try:
                 value = str(value)
             except Exception as err:
-                raise Exception(f"Failed to parse as string: '{value}' (err:{err})")
+                raise Exception(
+                    f"Failed to parse as string: '{value}' (err:{err})")
 
             assert value, f"Cannot add empty property"
-            assert len(value.splitlines()) == 1, "cannot add property containing newlines"
+            assert len(value.splitlines()
+                       ) == 1, "cannot add property containing newlines"
 
             old_content = self.content
             if key in self.properties:  # edit prop
@@ -410,9 +420,9 @@ class LogseqBlock:
                 assert self.content.count(f"  {key}:: {old_val}") == 1, (
                     "unable to find key/val pair: {key}/{old_val}")
                 self.content = self.content.replace(
-                        f"  {key}:: {old_val}",
-                        f"  {key}:: {value}",
-                        )
+                    f"  {key}:: {old_val}",
+                    f"  {key}:: {value}",
+                )
             else:  # add prop
                 new = "\n" + "\t" * (self.indentation_level // 4)
                 new += f"  {key}:: {value}"
@@ -431,14 +441,14 @@ class LogseqBlock:
         else:
             assert key in self.properties, "key not found in properties"
             assert self.content.count(f"  {key}:: ") == 1, (
-                    f"invalid number of key {key} in {self.content}")
+                f"invalid number of key {key} in {self.content}")
             temp = []
             for line in self.content.split("\n"):
                 if not re.search(rf"[ \t]+{key}:: ", line):
                     temp.append(line)
             new_content = "\n".join(temp)
             assert new_content.count(f"{key}::") == 0, (
-                    f"invalid number of key {key} in {new_content}")
+                f"invalid number of key {key} in {new_content}")
             self.content = new_content
             self._changed = True
 
@@ -448,12 +458,12 @@ class LogseqBlock:
     def as_json(self) -> dict:
         """returns the block as json representation."""
         return {
-                "block_properties": self.properties,
-                "block_content": self.content,
-                "block_indentation_level": self.indentation_level,
-                "block_TODO_state": self.TODO_state,
-                "block_UUID": self.UUID,
-                }
+            "block_properties": self.properties,
+            "block_content": self.content,
+            "block_indentation_level": self.indentation_level,
+            "block_TODO_state": self.TODO_state,
+            "block_UUID": self.UUID,
+        }
 
     def _get_TODO_state(self) -> str:
         TODO_state = None
@@ -468,11 +478,11 @@ class LogseqBlock:
     def _get_indentation(self) -> int:
         """count the leading spaces of a block to know the indentation level"""
         n = len(
-                re.search(
-                    self.INDENT_REGEX,
-                    self.content.replace("\t", " " * 4)
-                    ).group(0)
-                )
+            re.search(
+                self.INDENT_REGEX,
+                self.content.replace("\t", " " * 4)
+            ).group(0)
+        )
         return n
 
     @property
@@ -486,7 +496,8 @@ class LogseqBlock:
     def UUID(self, new: str) -> None:
         assert isinstance(new, str), "new id must be a string"
         assert new.count("-") == 4, "new id must contain 4 -"
-        assert new.replace("-", "").isalnum(), "new id does not look like a UUID4"
+        assert new.replace(
+            "-", "").isalnum(), "new id does not look like a UUID4"
         self.set_property(key="id", value=new)
         self._changed = True
 

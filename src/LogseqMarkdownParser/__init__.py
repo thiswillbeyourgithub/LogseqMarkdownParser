@@ -10,6 +10,7 @@ except:
 
 __VERSION__: str = "2.8"
 
+
 def parse_file(
     file_path: str = None,
     verbose: bool = False,
@@ -34,9 +35,9 @@ def parse_file(
         content = sys.stdin.read()
 
     parsed = LogseqPage(
-            content=content,
-            verbose=verbose,
-            )
+        content=content,
+        verbose=verbose,
+    )
 
     if as_json:
         return json.dumps(
@@ -47,8 +48,10 @@ def parse_file(
     else:
         return parsed
 
+
 def cli() -> None:
     fire.Fire(parse_file)
+
 
 if __name__ == "__main__":
     fire.Fire(parse_file)
