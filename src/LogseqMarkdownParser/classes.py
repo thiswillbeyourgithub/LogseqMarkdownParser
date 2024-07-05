@@ -483,7 +483,7 @@ class LogseqBlock:
         return self._blockvalues["UUID"]
 
     @UUID.setter
-    def UUID(self, new):
+    def UUID(self, new: str) -> None:
         assert isinstance(new, str), "new id must be a string"
         assert new.count("-") == 4, "new id must contain 4 -"
         assert new.replace("-", "").isalnum(), "new id does not look like a UUID4"
