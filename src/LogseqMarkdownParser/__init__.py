@@ -3,10 +3,7 @@ import json
 from pathlib import Path
 import fire
 
-try:
-    from .classes import LogseqPage, LogseqBlock
-except:
-    from classes import LogseqPage, LogseqBlock
+from .classes import LogseqPage, LogseqBlock
 
 __VERSION__: str = "2.8"
 
