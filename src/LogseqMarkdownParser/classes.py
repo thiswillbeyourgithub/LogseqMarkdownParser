@@ -5,6 +5,8 @@ from pathlib import Path
 import uuid
 import re
 
+__VERSION__: str = "2.8"
+
 # only use beartype if its installed
 try:
     from beartype import beartype
@@ -28,6 +30,8 @@ class LogseqPage:
             list of LogseqBlock objects
         * page_properties
             can be edited like a normal dict, as opposed to the block properties
+        * __VERSION__
+            version of the LogseqMarkdownParser
 
     Methods:
         * export_to
@@ -36,6 +40,7 @@ class LogseqPage:
             page_property attribute
 
     """
+    __VERSION__ = __VERSION__
     PAGE_PROP_REGEX = re.compile(r"(\w[\w_-]*\w:: .+)")
 
     def __init__(
@@ -241,6 +246,7 @@ class LogseqPage:
 class LogseqBlock:
     BLOCK_PROP_REGEX = re.compile(r"[ \t]+(\w[\w_-]*\w:: .+)")
     INDENT_REGEX = re.compile(r"^[ \t]*")
+    __VERSION__ = __VERSION__
 
     def __init__(
             self,

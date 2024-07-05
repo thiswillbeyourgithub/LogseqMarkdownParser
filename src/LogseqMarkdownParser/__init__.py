@@ -5,7 +5,7 @@ import fire
 
 from .classes import LogseqPage, LogseqBlock
 
-__VERSION__: str = "2.8"
+__VERSION__ = LogseqPage.__VERSION__
 
 
 def parse_file(
