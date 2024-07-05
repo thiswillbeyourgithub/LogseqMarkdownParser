@@ -2,3 +2,4 @@ __pycache__/
 examples/.cache
 dist
 src/LogseqMarkdownParser.egg-info
+.aider*
