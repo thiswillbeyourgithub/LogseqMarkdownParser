@@ -5,7 +5,7 @@ from pathlib import Path
 import uuid
 import re
 
-__VERSION__: str = "2.8"
+__VERSION__: str = "2.10"
 
 # only use beartype if its installed
 try:
