@@ -71,7 +71,7 @@ def main(
     for ib, ob in enumerate(parsed_output.blocks):
         if pattern.match(ob.content):
             assert good_location is None and level is None
-            good_location = ib + 1
+            good_location = ib
             level = ob.indentation_level
             if order == "before":
                 break
@@ -82,7 +82,7 @@ def main(
         elif good_location and ob.indentation_level <= level:
             assert order == "after"
             skip_sep = False
-            good_location = ib
+            good_location = ib - 1
             break
     assert good_location is not None and level is not None
 
