@@ -12,7 +12,7 @@ def parse_file(
     file_path: str = None,
     verbose: bool = False,
     as_json: bool = False,
-    ):
+):
     """
     Parameters:
     -----------

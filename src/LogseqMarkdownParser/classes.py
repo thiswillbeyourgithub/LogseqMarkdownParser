@@ -43,7 +43,7 @@ class LogseqPage:
         content: str,
         check_parsing: bool = False,
         verbose: bool = False,
-        ) -> None:
+    ) -> None:
         self.verbose = verbose
         assert isinstance(content, str), (
             f"content must be of type string, not '{type(content)}'")
@@ -207,7 +207,7 @@ class LogseqPage:
         file_path: str,
         overwrite: bool = False,
         allow_empty: bool = False,
-        ) -> None:
+    ) -> None:
         """
         export the blocks to file_path
         """
@@ -246,7 +246,7 @@ class LogseqBlock:
             self,
             content: str,
             verbose: bool = False,
-            ) -> None:
+    ) -> None:
         """
         Class with the following new attributes:
             indentation_level: in number of spaces, with tab=4
