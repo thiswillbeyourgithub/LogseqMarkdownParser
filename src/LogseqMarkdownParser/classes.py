@@ -1,7 +1,14 @@
+import sys
 import textwrap
 from pathlib import Path
 import uuid
 import re
+
+# only use beartype if its installed
+try:
+    from beartype import beartype
+except Exception as err:
+    pass
 
 # if used in a tqdm loop, it's annoying to have the prints appear
 # if tqdm is found, use it instead
@@ -482,3 +489,8 @@ class LogseqBlock:
         assert new.replace("-", "").isalnum(), "new id does not look like a UUID4"
         self.set_property(key="id", value=new)
         self._changed = True
+
+
+if "beartype" in sys.modules:
+    LogseqBlock = beartype(LogseqBlock)
+    LogseqPage = beartype(LogseqPage)
