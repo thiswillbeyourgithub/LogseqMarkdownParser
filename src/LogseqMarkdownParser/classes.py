@@ -1,5 +1,6 @@
 import sys
 import textwrap
+from typing import Union
 from pathlib import Path
 import uuid
 import re
@@ -330,7 +331,7 @@ class LogseqBlock:
             "block intentation level apparently failed to be set")
 
     @property
-    def TODO_state(self) -> str:
+    def TODO_state(self) -> Union[None, str]:
         return self._get_TODO_state()
 
     @TODO_state.setter
@@ -465,7 +466,7 @@ class LogseqBlock:
             "block_UUID": self.UUID,
         }
 
-    def _get_TODO_state(self) -> str:
+    def _get_TODO_state(self) -> Union[None, str]:
         TODO_state = None
         for keyword in ["TODO", "DOING", "NOW", "LATER", "DONE"]:
             if re.search(f"- {keyword} .*", self.content.lstrip()):
