@@ -23,6 +23,9 @@ setup(
     install_requires=[
         "fire>=0.5.0",
     ],
+    extras_require={
+        "beartype": ["beartype"],
+    },
     python_requires=">=3.9",
     entry_points={
         "console_scripts": [
