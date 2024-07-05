@@ -10,5 +10,5 @@ push = false
 
 [bumpver.file_patterns]
 "bumpver.toml" = ['current_version = "{version}"']
-"pyproject.toml" = ['version = "{version}"']
+"setup.py" = ['version = "{version}",']
 "src/LogseqMarkdownParser/__init__.py" = ['__VERSION__: str = "{version}"']
