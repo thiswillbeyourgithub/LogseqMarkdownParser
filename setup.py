@@ -23,6 +23,7 @@ setup(
     keywords=["Logseq", "PKM", "Markdown", "parsing", "parser", "properties", "block", "text"],
     install_requires=[
         "fire>=0.5.0",
+        "rtoml >= 0.11.0",
     ],
     extras_require={
         "beartype": ["beartype"],

@@ -1,5 +1,5 @@
 # LogseqMarkdownParser
-a simple python script to load a markdown file and easily access the properties of each block etc. You can also parse it as json, handy when using [jq](https://github.com/jqlang/jq).
+a simple python script to load a markdown file and easily access the properties of each block etc. You can also parse it as json, handy when using [jq](https://github.com/jqlang/jq). toml output is also supported.
 
 # Notes to reader
 * **Why make this?** I wanted a script that reads a logseq page, extracts every "DONE" tasks and append it to another file. So I made this little parser. The resulting script can be found in `examples/done_mover.py`. If you need anything just create an issue.
@@ -11,8 +11,9 @@ a simple python script to load a markdown file and easily access the properties 
 * Implements classes `LogseqPage` and `LogseqBlock`
 * access block properties as a dictionary
 * easily save to a path
-* parse as json: `LogseqMarkdownParser some_file.md --as_json |jq`
-* supports stdin: `cat some_file.md | LogseqMarkdownParser --as_json | jq`
+* parse as json: `LogseqMarkdownParser some_file.md --out_format='json' |jq`
+* parse as toml: `LogseqMarkdownParser some_file.md --out_format='toml' > output.toml`
+* supports stdin: `cat some_file.md | LogseqMarkdownParser --out_format='json' | jq`
 * shell completion: `eval "$(LogseqMarkdownParser -- --completion)"` or `eval "$(cat completion.bash)"`
 
 ## Usage

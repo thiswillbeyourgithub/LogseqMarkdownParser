@@ -4,6 +4,8 @@ from typing import Union
 from pathlib import Path
 import uuid
 import re
+import json
+import rtoml as toml
 
 __VERSION__: str = "2.10"
 
@@ -237,10 +239,20 @@ class LogseqPage:
     def __repr__(self) -> str:
         return f"LogseqPage({self.__str__()})"
 
-    def as_json(self) -> list[dict]:
-        """returns a json format string for the whole text. Meant to be piped
-        to jq"""
-        return [block.as_json() for block in self.blocks]
+    def export(self, format: str) -> Union[list[dict], str]:
+        """returns the whole logseq page formatted.
+        Expected formats are "list_of_dict", "json", "toml".
+        'json' for example can be piped directly to jq in a shell.
+        """
+        cont = [block.export(format="dict") for block in self.blocks]
+        if format == "list_of_dict":
+            return cont
+        elif format == "json":
+            return json.dumps(cont, ensure_ascii=False, indent=2)
+        elif format == "toml":
+            return toml.dumps(cont, pretty=True)
+        else:
+            raise ValueError(format)
 
 
 class LogseqBlock:
@@ -462,15 +474,24 @@ class LogseqBlock:
             assert key not in self.properties, (
                 "key apparently failed to be deleted")
 
-    def as_json(self) -> dict:
-        """returns the block as json representation."""
-        return {
+    def export(self, format: str) -> Union[dict, str]:
+        """export the block. Formats are 'dict', 'json', 'toml'"""
+        assert format in ["dict", "json", "toml"], "support export format are dict, json, toml"
+        d = {
             "block_properties": self.properties,
             "block_content": self.content,
             "block_indentation_level": self.indentation_level,
             "block_TODO_state": self.TODO_state,
             "block_UUID": self.UUID,
         }
+        if format == "dict":
+            return d
+        elif format == "json":
+            return json.dumps(d, ensure_ascii=False, indent=2)
+        elif format == "toml":
+            return toml.dumps(d, pretty=True)
+        else:
+            raise ValueError(format)
 
     def _get_TODO_state(self) -> Union[None, str]:
         TODO_state = None

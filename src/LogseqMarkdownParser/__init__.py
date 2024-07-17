@@ -2,6 +2,7 @@ import sys
 import json
 from pathlib import Path
 import fire
+from typing import Optional
 
 from .classes import LogseqPage, LogseqBlock
 
@@ -11,7 +12,7 @@ __VERSION__ = LogseqPage.__VERSION__
 def parse_file(
     file_path: str = None,
     verbose: bool = False,
-    as_json: bool = False,
+    out_format: Optional[str] = None,
 ):
     """
     Parameters:
@@ -21,8 +22,8 @@ def parse_file(
 
     verbose: bool, default to False
 
-    as_json: default to False.
-        If True will output a json string meant to be piped to jq.
+    out_format: default to None
+        Either 'json' or 'toml'. For example can be piped directly to jq
     """
     if file_path is not None:
         assert Path(file_path).exists(), f"{file_path} not found"
@@ -36,12 +37,8 @@ def parse_file(
         verbose=verbose,
     )
 
-    if as_json:
-        return json.dumps(
-            parsed.as_json(),
-            indent=4,
-            ensure_ascii=False
-        )
+    if out_format:
+        return parsed.export(format=out_format)
     else:
         return parsed
 
