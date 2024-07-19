@@ -1,7 +1,7 @@
 import sys
 import textwrap
 from typing import Union
-from pathlib import Path
+from pathlib import Path, PosixPath
 import uuid
 import re
 import json
@@ -211,7 +211,7 @@ class LogseqPage:
 
     def export_to(
         self,
-        file_path: str,
+        file_path: Union[str, PosixPath],
         overwrite: bool = False,
         allow_empty: bool = False,
     ) -> None:

@@ -1,8 +1,8 @@
 import sys
 import json
-from pathlib import Path
+from pathlib import Path, PosixPath
 import fire
-from typing import Optional
+from typing import Optional, Union
 
 from .classes import LogseqPage, LogseqBlock
 
@@ -10,7 +10,7 @@ __VERSION__ = LogseqPage.__VERSION__
 
 
 def parse_file(
-    file_path: str = None,
+    file_path: Union[str, PosixPath] = None,
     verbose: bool = False,
     out_format: Optional[str] = None,
 ):
