@@ -23,7 +23,7 @@ _complete-LogseqMarkdownParser()
     ;;
   esac
 
-  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+  COMPREPLY=( $(compgen -f -W "${opts}" -- ${cur}) )
   return 0
 }
 
