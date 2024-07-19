@@ -19,7 +19,7 @@ except Exception as err:
 # if tqdm is found, use it instead
 try:
     from tqdm import tqdm
-    print = tqdm.write
+    print = lambda x: tqdm.write(str(x))
 except Exception as err:
     pass
 
