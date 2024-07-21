@@ -321,7 +321,7 @@ class LogseqBlock:
         return cont
 
     @content.setter
-    def content(self, new: str) -> str:
+    def content(self, new: str) -> None:
         old = self._blockvalues["content"]
         assert isinstance(new, str), "new content must be a string"
         assert new.lstrip().startswith(
