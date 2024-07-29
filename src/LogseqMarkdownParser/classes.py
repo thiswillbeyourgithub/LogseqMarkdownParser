@@ -23,6 +23,31 @@ try:
 except Exception as err:
     pass
 
+class ImmutableDict(dict):
+    "Dict that can't be modified, used for block properties to tell you to use set_property instead"
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__frozen = True
+    def __setitem__(self, key, value):
+        if self.__frozen:
+            raise TypeError("Cannot modify ImmutableDict after initialization")
+        super().__setitem__(key, value)
+    def __delitem__(self, key):
+        if self.__frozen:
+            raise TypeError("Cannot modify ImmutableDict after initialization")
+        super().__delitem__(key)
+    def clear(self):
+        raise TypeError("Cannot modify ImmutableDict after initialization")
+    def pop(self, key, default=None):
+        raise TypeError("Cannot modify ImmutableDict after initialization")
+    def popitem(self):
+        raise TypeError("Cannot modify ImmutableDict after initialization")
+    def setdefault(self, key, default=None):
+        raise TypeError("Cannot modify ImmutableDict after initialization")
+    def update(self, *args, **kwargs):
+        raise TypeError("Cannot modify ImmutableDict after initialization")
+
+
 
 class LogseqPage:
     """simple class that stores the markdown blocks in the self.blocks attribute.
@@ -275,7 +300,7 @@ class LogseqBlock:
                   If an 'id' property is already present in the block,
                   it will be used instead, this is the case if the UUID was
                   set by Logseq.
-            properties: a dict with the block properties
+            properties: an ImmutableDict containing the block properties.
 
         And the following methods:
             set_property: set the value to None to delete the property
@@ -379,7 +404,8 @@ class LogseqBlock:
             self._changed = True
 
     @property
-    def properties(self) -> dict:
+    def properties(self) -> ImmutableDict:
+        "Shows the block properties, but to modify them, you have to use the 'set_property' method"
         return self._get_properties()
 
     @properties.setter
@@ -387,7 +413,7 @@ class LogseqBlock:
         raise Exception(
             "To modify the properties you must use self.set_property(key, value)")
 
-    def _get_properties(self) -> dict:
+    def _get_properties(self) -> ImmutableDict:
         prop = re.findall(self.BLOCK_PROP_REGEX, self.content)
         properties = {}
         for found in prop:
@@ -408,6 +434,7 @@ class LogseqBlock:
 
         n_id = len(re.findall(r"[ \t]+id:: [\w-]+", cont))
         assert n_id in [0, 1], f"Found {n_id} mention of id:: property"
+        properties = ImmutableDict(properties)
 
         return properties
 
