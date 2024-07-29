@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="LogseqMarkdownParser",
-    version="2.14",
+    version="2.15",
     author="thiswillbeyourgithub",
     description="parse logseq markdown text with easy access to properties, hierarchy, TODO etc",
     long_description=long_description,

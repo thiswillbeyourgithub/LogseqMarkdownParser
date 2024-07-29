@@ -7,7 +7,7 @@ import re
 import json
 import rtoml as toml
 
-__VERSION__: str = "2.14"
+__VERSION__: str = "2.15"
 
 # only use beartype if its installed
 try:
