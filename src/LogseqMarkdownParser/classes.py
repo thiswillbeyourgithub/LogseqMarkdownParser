@@ -340,7 +340,7 @@ class LogseqBlock:
         # note: we don't compare the new to the old value
         # because this way we make sure that leading spaces are replaced
         # by tabs
-        assert new % 4 == 0, "new indentation level must be divisible by 4"
+        assert new % 4 == 0, f"new indentation level must be divisible by 4, not {new}"
         unindented = textwrap.dedent(self.content)
         reindented = textwrap.indent(unindented, "\t" * (new // 4))
         self.content = reindented
