@@ -6,7 +6,7 @@ from typing import Optional, Union, List
 from .pages import LogseqPage
 from .blocks import LogseqBlock
 
-__VERSION__: str = "3.0"
+__VERSION__: str = "3.1"
 
 __ALL__ = ["parse_file", "parse_text", "LogseqPage", "LogseqBlock"]
 
