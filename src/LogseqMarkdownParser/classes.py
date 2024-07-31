@@ -62,6 +62,7 @@ class LogseqPage:
             version of the LogseqMarkdownParser
 
     Methods:
+        - format
         - export_to
         - set_property
         - del_property
@@ -281,7 +282,7 @@ class LogseqPage:
     def __repr__(self) -> str:
         return f"LogseqPage({self.__str__()})"
 
-    def export(self, format: str) -> Union[list[dict], str]:
+    def format(self, format: str) -> Union[list[dict], str]:
         """returns the whole logseq page formatted.
         Expected formats are "list_of_dict", "json", "toml".
         'json' for example can be piped directly to jq in a shell.
@@ -532,9 +533,9 @@ class LogseqBlock:
         assert value == self.properties[key], (
             "key apparently failed to be set to the right value")
 
-    def export(self, format: str) -> Union[dict, str]:
-        """export the block. Formats are 'dict', 'json', 'toml'"""
-        assert format in ["dict", "json", "toml"], "support export format are dict, json, toml"
+    def format(self, format: str) -> Union[dict, str]:
+        """format the block. Formats are 'dict', 'json', 'toml'"""
+        assert format in ["dict", "json", "toml"], "supportted format are dict, json, toml"
         d = {
             "block_properties": self.properties,
             "block_content": self.content,
