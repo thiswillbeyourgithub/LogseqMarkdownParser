@@ -11,7 +11,7 @@ _complete-LogseqMarkdownParser()
   lastcommand=$(get_lastcommand)
 
   opts=""
-  GLOBAL_OPTIONS="--file-path --as-json --verbose"
+  GLOBAL_OPTIONS="--verbose --file-path --out-format"
 
 
   case "${lastcommand}" in
@@ -23,7 +23,7 @@ _complete-LogseqMarkdownParser()
     ;;
   esac
 
-  COMPREPLY=( $(compgen -f -W "${opts}" -- ${cur}) )
+  COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
   return 0
 }
 
