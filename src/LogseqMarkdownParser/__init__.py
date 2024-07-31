@@ -1,5 +1,4 @@
 import sys
-import json
 from pathlib import Path, PosixPath
 import fire
 from typing import Optional, Union, List
