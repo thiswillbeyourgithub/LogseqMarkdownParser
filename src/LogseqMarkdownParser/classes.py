@@ -290,7 +290,9 @@ class LogseqPage:
         parsed depending on the keyword. Note that the first item of the list
         will always be the page_properties.
         """
-        cont = [block.export(format="dict") for block in self.blocks]
+        page_prop = self.page_properties
+        cont = [page_prop] + [block.format(format="dict") for block in self.blocks]
+
         if format == "list_of_dict":
             return cont
         elif format == "json":
