@@ -268,7 +268,7 @@ class LogseqPage:
         will always be the page_properties.
         """
         page_prop = self.page_properties
-        cont = [page_prop] + [block.format(format="dict") for block in self.blocks]
+        cont = [page_prop] + [block.dict() for block in self.blocks]
 
         if format == "list_of_dict":
             return cont
