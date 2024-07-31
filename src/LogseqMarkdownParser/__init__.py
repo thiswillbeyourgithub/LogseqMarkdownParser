@@ -3,9 +3,10 @@ from pathlib import Path, PosixPath
 import fire
 from typing import Optional, Union, List
 
-from .classes import LogseqPage, LogseqBlock
+from .pages import LogseqPage
+from .blocks import LogseqBlock
 
-__VERSION__ = LogseqPage.__VERSION__
+__VERSION__: str = "2.15"
 
 
 def parse_file(
