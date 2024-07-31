@@ -202,7 +202,7 @@ class LogseqBlock:
 
         n_id = len(re.findall(r"[ \t]+id:: [\w-]+", cont))
         assert n_id in [0, 1], f"Found {n_id} mention of id:: property"
-        properties = ImmutableDict(properties)
+        properties = ImmutableDict(properties.copy())
 
         return properties
 
