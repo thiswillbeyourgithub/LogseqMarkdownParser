@@ -139,7 +139,7 @@ class LogseqBlock:
         self.content = reindented
         self._changed = True
         assert new == self.indentation_level, (
-            "block intentation level apparently failed to be set")
+            "block indentation level apparently failed to be set")
 
     @property
     def TODO_state(self) -> Union[None, str]:
