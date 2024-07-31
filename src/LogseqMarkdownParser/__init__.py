@@ -46,6 +46,20 @@ def parse_file(
     else:
         return parsed
 
+def parse_text(
+    content: str,
+    verbose: bool = False,
+    ) -> LogseqPage:
+    """
+    Parameters:
+    -----------
+    content: string content
+    verbose: bool, default to False
+
+    Returns
+    """
+    return LogseqPage(content=content, verbose=verbose)
+
 
 def cli() -> None:
     fire.Fire(parse_file)
