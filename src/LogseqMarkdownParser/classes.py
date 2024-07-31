@@ -121,7 +121,7 @@ class LogseqPage:
         if blocks:
             assert first_block_reached
 
-        self.page_properties = {}  # the property of the whole page have to be stored separatly
+        self.page_properties = {}  # the property of the whole page have to be stored separately
         prop = re.findall(self.PAGE_PROP_REGEX, pageprop)
         for found in prop:
             assert found == found.lstrip(), f"Incorrect page property? {found}"
