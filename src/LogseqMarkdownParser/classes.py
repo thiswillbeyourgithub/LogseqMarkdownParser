@@ -62,6 +62,7 @@ class LogseqPage:
             version of the LogseqMarkdownParser
 
     Methods:
+        - dict
         - format
         - export_to
         - set_property
@@ -302,6 +303,15 @@ class LogseqPage:
         else:
             raise ValueError(format)
 
+    def dict(self) -> dict:
+        """returns the page, with its page properties and blocks as a single dict"""
+        d = {
+            "page_properties": self.page_properties,
+            "page_content": self.content,
+            "blocks": [b.dict() for b in self.blocks],
+        }
+        return d
+
 
 class LogseqBlock:
     BLOCK_PROP_REGEX = re.compile(r"[ \t]+(\w[\w_-]*\w:: .+)")
@@ -325,7 +335,9 @@ class LogseqBlock:
                   set by Logseq.
             - properties: an ImmutableDict containing the block properties.
 
-        And the following methods:
+        Methods:
+            - dict
+            - format
             - set_property
             - del_property
 
@@ -553,6 +565,10 @@ class LogseqBlock:
             return toml.dumps(d, pretty=True)
         else:
             raise ValueError(format)
+
+    def dict(self) -> dict:
+        """returns the block as a dict. Same as self.format('dict')"""
+        return self.format(format="dict")
 
     def _get_TODO_state(self) -> Union[None, str]:
         TODO_state = None
