@@ -12,6 +12,7 @@ a simple python script to load a markdown file and easily access the properties 
 * Implements classes `LogseqPage` and `LogseqBlock`
 * read pages, page properties, block and block properties as a regular python dictionary
 * easily save to a path as a Logseq-ready markdown file with `page.export_to`
+* Static typing with [beartype](https://beartype.readthedocs.io/) if you have it installed (otherwise no typechecking).
 * parse for the cli as json: `LogseqMarkdownParser some_file.md --out_format='json' |jq`
 * parse for the cli as toml: `LogseqMarkdownParser some_file.md --out_format='toml' > output.toml`
 * supports stdin: `cat some_file.md | LogseqMarkdownParser --out_format='json' | jq`
