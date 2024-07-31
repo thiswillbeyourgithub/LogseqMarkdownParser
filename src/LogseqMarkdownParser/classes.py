@@ -190,7 +190,13 @@ class LogseqPage:
 
     @property
     def content(self) -> str:
-        "return the concatenated list of each block of the page"
+        """return the concatenated list of each block of the page. It cannot
+        be edited: you have to edit the block's content instead.
+
+        The page properties are present at the top just like in logseq.
+        Note that the leading spaces are not replaced by tabs, so logseq might
+        overwrite them badly so use self.export_to instead if you want to save
+        the file to Logseq"""
         temp = "\n".join(
             [f"{k}:: {v}" for k, v in self.page_properties.items()])
         if self.blocks:
@@ -223,9 +229,9 @@ class LogseqPage:
             "You have to edit the blocks individually.")
 
     def set_property(self, key: str, value: Any) -> None:
-        """convenience function to harmonize behavior of page and blocks.
+        """
         The key must be a string and the value will be cast as string.
-        You can edit self.page_properties as a regular dict instead.
+        You can edit self.page_properties as a regular dict instead of using this method.
         """
         try:
             value = str(value)
@@ -235,8 +241,9 @@ class LogseqPage:
         self.page_properties[key] = value
 
     def del_property(self, key: str) -> None:
-        """convenience function to harmonize behavior of page and blocks.
-        You can edit self.page_properties as a regular dict instead.
+        """
+        The key must be a string and the value will be cast as string.
+        You can edit self.page_properties as a regular dict instead of using this method.
         """
         assert key in self.page_properties, (
             f"No {key} found in page_properties key so can't delete it")
@@ -250,6 +257,8 @@ class LogseqPage:
     ) -> None:
         """
         export the blocks to file_path
+        Note that the leading spaces are replaced by tabs, so Logeq will not
+        overwrite them (and sometimes badly!).
         """
         if not overwrite:
             if Path(file_path).exists():
@@ -276,6 +285,9 @@ class LogseqPage:
         """returns the whole logseq page formatted.
         Expected formats are "list_of_dict", "json", "toml".
         'json' for example can be piped directly to jq in a shell.
+        In all cases, the format will be a python list of dict, that is then
+        parsed depending on the keyword. Note that the first item of the list
+        will always be the page_properties.
         """
         cont = [block.export(format="dict") for block in self.blocks]
         if format == "list_of_dict":
