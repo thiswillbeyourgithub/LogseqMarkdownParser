@@ -2,7 +2,7 @@ import sys
 import json
 from pathlib import Path, PosixPath
 import fire
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from .classes import LogseqPage, LogseqBlock
 
@@ -13,7 +13,7 @@ def parse_file(
     file_path: Union[str, PosixPath] = None,
     verbose: bool = False,
     out_format: Optional[str] = None,
-):
+) -> Union[List[dict], str, LogseqPage]:
     """
     Parameters:
     -----------
