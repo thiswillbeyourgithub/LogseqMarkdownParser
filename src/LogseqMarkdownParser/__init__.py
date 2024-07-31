@@ -42,7 +42,7 @@ def parse_file(
     )
 
     if out_format:
-        return parsed.export(format=out_format)
+        return parsed.format(format=out_format)
     else:
         return parsed
 
