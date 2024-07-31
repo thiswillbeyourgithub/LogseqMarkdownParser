@@ -54,18 +54,17 @@ class LogseqPage:
     """simple class that stores the markdown blocks in the self.blocks attribute.
 
     Attributes:
-        * blocks
+        - blocks
             list of LogseqBlock objects
-        * page_properties
+        - page_properties
             can be edited like a normal dict, as opposed to the block properties
-        * __VERSION__
+        - __VERSION__
             version of the LogseqMarkdownParser
 
     Methods:
-        * export_to
-        * set_property
-            convenience method for harmony. Access instead directly the
-            page_property attribute
+        - export_to
+        - set_property
+        - del_property
 
     """
     __VERSION__ = __VERSION__
@@ -301,31 +300,32 @@ class LogseqBlock:
     ) -> None:
         """
         Class with the following new attributes:
-            indentation_level: in number of spaces, with tab=4
-            TODO_state: wether the block is in a TODO/DOING/NOW/LATER/DONE etc.
+            - indentation_level: in number of spaces, with tab=4
+            - TODO_state: wether the block is in a TODO/DOING/NOW/LATER/DONE etc.
                               None otherwise.
-            UUID: a random UUID. It is not the same as the one used within
+            - UUID: a random UUID. It is not the same as the one used within
                   Logseq but can be used to keep track of parents.
                   If an 'id' property is already present in the block,
                   it will be used instead, this is the case if the UUID was
                   set by Logseq.
-            properties: an ImmutableDict containing the block properties.
+            - properties: an ImmutableDict containing the block properties.
 
         And the following methods:
-            set_property: set the value to None to delete the property
+            - set_property
+            - del_property
 
         Note:
-            * For modifying the content, properties, indentation_level or
+            - For modifying the content, properties, indentation_level or
               TODO_state: changing the value will affect the
               other values. I.e modifying the content to manually edit
               the indentation will have the same effect as modifying
               the indentation_level.
-            * the other attributes can not (yet?) be altered
-            * if the UUID attribute is changed, it will be inscribed in
+            - the other attributes can not (yet?) be altered
+            - if the UUID attribute is changed, it will be inscribed in
               the block as an id property, just like Logseq does. By default the
               UUID is random() and not inscribed in the content. Just like
               in Logseq.
-            * verbose argument is currently unused
+            - verbose argument is currently unused
         """
         assert content.lstrip().startswith("-"), (
             f"stripped block content must start with '- '. Not the case here: '{content}'")
