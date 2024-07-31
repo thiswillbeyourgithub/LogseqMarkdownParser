@@ -23,6 +23,11 @@ def parse_file(
 
     out_format: default to None
         Either 'json' or 'toml'. For example can be piped directly to jq
+        If None, returns the LogseqPage directly
+
+    Returns:
+    --------
+    Depending on out_format: Union[LogseqPage, List[dict], str]
     """
     if file_path is not None:
         assert Path(file_path).exists(), f"{file_path} not found"
