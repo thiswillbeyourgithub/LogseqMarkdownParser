@@ -1,6 +1,6 @@
 import sys
 import textwrap
-from typing import Union
+from typing import Union, Any
 from pathlib import Path, PosixPath
 import uuid
 import re
@@ -223,17 +223,25 @@ class LogseqPage:
             "Cannot edit page content directly. "
             "You have to edit the blocks individually.")
 
-    def set_property(self, key: str, value: str = None) -> None:
+    def set_property(self, key: str, value: Any) -> None:
+        """convenience function to harmonize behavior of page and blocks.
+        The key must be a string and the value will be cast as string.
+        You can edit self.page_properties as a regular dict instead.
+        """
+        try:
+            value = str(value)
+        except Exception as err:
+            raise Exception(
+                f"Failed to parse as string: '{value}' (err:{err})")
+        self.page_properties[key] = value
+
+    def del_property(self, key: str) -> None:
         """convenience function to harmonize behavior of page and blocks.
         You can edit self.page_properties as a regular dict instead.
-        Set None as the value to delete a key.
         """
-        if value is not None:
-            self.page_properties[key] = value
-        else:
-            assert key in self.page_properties, (
-                f"No {key} found in page_properties key so can't delete it")
-            del self.page_properties[key]
+        assert key in self.page_properties, (
+            f"No {key} found in page_properties key so can't delete it")
+        del self.page_properties[key]
 
     def export_to(
         self,
@@ -440,67 +448,77 @@ class LogseqBlock:
         return properties
 
     # METHODS:
+
+    def del_property(
+        self,
+        key: str,
+        ) -> None:
+        """
+        Delete a property of the block.
+        Note that this will also directly alter the block content.
+        """
+        assert isinstance(key, str), f"key must be a string, not {type(key)}"
+        assert key in self.properties, "key not found in properties"
+        count =  self.content.count(f"  {key}:: ")
+        assert count == 1, (
+            f"Key {key} found {count} times in {self.content}")
+        temp = []
+        for line in self.content.split("\n"):
+            if not re.search(rf"[ \t]+{key}:: ", line):
+                temp.append(line)
+        new_content = "\n".join(temp)
+        assert new_content.count(f"{key}::") == 0, (
+            f"invalid number of key {key} in {new_content}")
+        self.content = new_content
+        self._changed = True
+
+        assert key not in self.properties, (
+            "key apparently failed to be deleted")
+
     def set_property(
             self,
             key: str,
-            value: str = None) -> None:
+            value: Any,
+        ) -> None:
         """
-        set a property to the block.
-        if the value is None, the property will be deleted
+        Set a property to the block.
+        The key must be a string and the value will be cast as string.
         Note that this will also directly alter the block content.
         """
-        assert isinstance(key, str), "key must be a string"
-        if value is not None:  # add or edit prop
-            try:
-                value = str(value)
-            except Exception as err:
-                raise Exception(
-                    f"Failed to parse as string: '{value}' (err:{err})")
+        assert isinstance(key, str), f"key must be a string, not {type(key)}"
+        try:
+            value = str(value)
+        except Exception as err:
+            raise Exception(
+                f"Failed to parse as string: '{value}' (err:{err})")
 
-            assert value, f"Cannot add empty property"
-            assert len(value.splitlines()
-                       ) == 1, "cannot add property containing newlines"
+        assert value, f"Cannot add empty string property for key {key}"
+        assert len(value.splitlines()
+                    ) == 1, "cannot add property containing newlines"
 
-            old_content = self.content
-            if key in self.properties:  # edit prop
-                old_val = self.properties[key]
-                assert self.content.count(f"  {key}:: {old_val}") == 1, (
-                    "unable to find key/val pair: {key}/{old_val}")
-                self.content = self.content.replace(
-                    f"  {key}:: {old_val}",
-                    f"  {key}:: {value}",
-                )
-            else:  # add prop
-                new = "\n" + "\t" * (self.indentation_level // 4)
-                new += f"  {key}:: {value}"
-                self.content += new
-                assert old_content in self.content
+        old_content = self.content
+        if key in self.properties:  # edit prop
+            old_val = self.properties[key]
+            assert self.content.count(f"  {key}:: {old_val}") == 1, (
+                "unable to find key/val pair: {key}/{old_val}")
+            self.content = self.content.replace(
+                f"  {key}:: {old_val}",
+                f"  {key}:: {value}",
+            )
+        else:  # add prop
+            new = "\n" + "\t" * (self.indentation_level // 4)
+            new += f"  {key}:: {value}"
+            self.content += new
+            assert old_content in self.content
 
-            self._changed = True
-            assert self.content.count(f"  {key}:: {value}") == 1, (
-                "unable to find key/val pair after it was set: {key}/{value}")
+        self._changed = True
+        assert self.content.count(f"  {key}:: {value}") == 1, (
+            "unable to find key/val pair after it was set: {key}/{value}")
 
-            assert key in self.properties, (
-                "key apparently failed to be added")
-            assert value == self.properties[key], (
-                "key apparently failed to be set to the right value")
-
-        else:
-            assert key in self.properties, "key not found in properties"
-            assert self.content.count(f"  {key}:: ") == 1, (
-                f"invalid number of key {key} in {self.content}")
-            temp = []
-            for line in self.content.split("\n"):
-                if not re.search(rf"[ \t]+{key}:: ", line):
-                    temp.append(line)
-            new_content = "\n".join(temp)
-            assert new_content.count(f"{key}::") == 0, (
-                f"invalid number of key {key} in {new_content}")
-            self.content = new_content
-            self._changed = True
-
-            assert key not in self.properties, (
-                "key apparently failed to be deleted")
+        assert key in self.properties, (
+            "key apparently failed to be added")
+        assert value == self.properties[key], (
+            "key apparently failed to be set to the right value")
 
     def export(self, format: str) -> Union[dict, str]:
         """export the block. Formats are 'dict', 'json', 'toml'"""
