@@ -283,7 +283,7 @@ class LogseqBlock:
         """format the block. Formats are 'dict', 'json', 'toml'"""
         assert format in ["dict", "json", "toml"], "supportted format are dict, json, toml"
         d = {
-            "block_properties": self.properties,
+            "block_properties": dict(self.properties).copy(),
             "block_content": self.content,
             "block_indentation_level": self.indentation_level,
             "block_TODO_state": self.TODO_state,
