@@ -277,7 +277,7 @@ class LogseqPage:
             f.write(cont)
 
     def __str__(self) -> str:
-        return "\n".join([str(b) for b in self.blocks])
+        return self.content
 
     def __repr__(self) -> str:
         return f"LogseqPage({self.__str__()})"
