@@ -218,7 +218,7 @@ class LogseqBlock:
         """
         assert isinstance(key, str), f"key must be a string, not {type(key)}"
         assert key in self.properties, "key not found in properties"
-        count =  self.content.count(f"  {key}:: ")
+        count =  self.content.count(f"{key}:: ")
         assert count == 1, (
             f"Key {key} found {count} times in {self.content}")
         temp = []
@@ -258,12 +258,14 @@ class LogseqBlock:
         old_content = self.content
         if key in self.properties:  # edit prop
             old_val = self.properties[key]
-            assert self.content.count(f"  {key}:: {old_val}") == 1, (
+            assert self.content.count(f"{key}:: {old_val}") == 1, (
                 "unable to find key/val pair: {key}/{old_val}")
-            self.content = self.content.replace(
-                f"  {key}:: {old_val}",
-                f"  {key}:: {value}",
-            )
+            lines = self.content.splitlines(keepends=True)[::-1]
+            for ili, li in enumerate(lines):
+                if f"{key}:: {old_val}" in li:
+                    li[ili] = li.replace(old_val, value)
+                    break
+            self.content = "".join(lines[::-1])
         else:  # add prop
             new = "\n" + "\t" * (self.indentation_level // 4)
             new += f"  {key}:: {value}"
@@ -271,7 +273,7 @@ class LogseqBlock:
             assert old_content in self.content
 
         self._changed = True
-        assert self.content.count(f"  {key}:: {value}") == 1, (
+        assert self.content.count(f"{key}:: {value}") == 1, (
             "unable to find key/val pair after it was set: {key}/{value}")
 
         assert key in self.properties, (
