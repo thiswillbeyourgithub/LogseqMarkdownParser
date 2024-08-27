@@ -24,6 +24,7 @@ setup(
     install_requires=[
         "fire>=0.5.0",
         "rtoml >= 0.11.0",
+        "uuid6 >= 2024.7.10",
     ],
     extras_require={
         "beartype": ["beartype"],

@@ -1,6 +1,6 @@
 import textwrap
 from typing import Union, Any, Callable
-import uuid
+import uuid6
 import re
 import json
 import rtoml as toml
@@ -64,7 +64,8 @@ class LogseqBlock:
                   Logseq but can be used to keep track of parents.
                   If an 'id' property is already present in the block,
                   it will be used instead, this is the case if the UUID was
-                  set by Logseq.
+                  set by Logseq. Otherwise, a UUI6 (so sortable by time) will
+                  be used.
             - properties: an ImmutableDict containing the block properties.
 
         Methods:
@@ -96,7 +97,7 @@ class LogseqBlock:
         if "id" in self.properties:
             self._blockvalues["UUID"] = self.properties["id"]
         else:
-            self._blockvalues["UUID"] = str(uuid.uuid4())
+            self._blockvalues["UUID"] = str(uuid6.uuid6())
         self._changed = False  # set to True if any value was manually changed
 
     def __str__(self) -> str:
@@ -336,6 +337,6 @@ class LogseqBlock:
         assert isinstance(new, str), "new id must be a string"
         assert new.count("-") == 4, "new id must contain 4 -"
         assert new.replace(
-            "-", "").isalnum(), "new id does not look like a UUID4"
+            "-", "").isalnum(), "new id does not look like a UUID6"
         self.set_property(key="id", value=new)
         self._changed = True
