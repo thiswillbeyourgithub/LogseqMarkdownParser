@@ -1,5 +1,5 @@
 __pycache__/
 examples/.cache
 dist
-src/LogseqMarkdownParser.egg-info
+LogseqMarkdownParser.egg-info
 .aider*

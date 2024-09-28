@@ -13,7 +13,6 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/thiswillbeyourgithub/LogseqMarkdownParser",
-    package_dir={"": "src"},
     packages=find_packages(),
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
