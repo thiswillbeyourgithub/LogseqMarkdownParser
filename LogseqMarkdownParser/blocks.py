@@ -48,7 +48,7 @@ class ImmutableDict(dict):
 @typechecker
 class LogseqBlock:
     BLOCK_PROP_REGEX = re.compile(r"[ \t]+(\w[\w_-]*\w:: .+)")
-    INDENT_REGEX = re.compile(r"^[ \t]*")
+    INDENT_REGEX = re.compile(r"^[ ]*")
 
     def __init__(
             self,
