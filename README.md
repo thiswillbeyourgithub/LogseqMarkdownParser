@@ -20,7 +20,14 @@ a simple python script to load a markdown file and easily access the properties 
 
 ## How to
 * Install with `python -m pip install LogseqMarkdownParser`
+
 ### Usage
+
+Here's an example that use `LogseqMarkdownParser`:
+- https://github.com/thiswillbeyourgithub/wdoc/tree/main/scripts/TheFiche
+- If you do use it, tell me so that I can link it here!
+
+Here's a script example:
 ``` python
 import LogseqMarkdownParser
 
