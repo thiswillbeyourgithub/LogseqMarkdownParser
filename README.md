@@ -25,6 +25,7 @@ a simple python script to load a markdown file and easily access the properties 
 
 Here's an example that use `LogseqMarkdownParser`:
 - https://github.com/thiswillbeyourgithub/wdoc/tree/main/scripts/TheFiche
+- https://github.com/thiswillbeyourgithub/MdXLogseqTODOSync
 - If you do use it, tell me so that I can link it here!
 
 Here's a script example:
