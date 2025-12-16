@@ -15,7 +15,6 @@ setup(
     url="https://github.com/thiswillbeyourgithub/LogseqMarkdownParser",
     packages=find_packages(),
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
     ],
